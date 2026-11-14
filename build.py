@@ -81,6 +81,7 @@ def site_footer(home):
     <ul>
       <li><a href="{home}#books">The Books</a></li>
       <li><a href="{home}clean-duke-romance-books/">Clean Duke Romances</a></li>
+      <li><a href="{home}clean-christmas-regency-romance/">Christmas Romances</a></li>
       <li><a href="{home}#how">How It Works</a></li>
       <li><a href="https://www.instagram.com/emmavelott/" target="_blank" rel="noopener">Instagram</a></li>
       <li><a href="https://emaanspark835.gumroad.com/" target="_blank" rel="noopener">Shop</a></li>
@@ -435,6 +436,142 @@ def build_duke_page():
 """
 
 
+XMAS_SLUG = "clean-christmas-regency-romance"
+# Set this to the BookFunnel signup link once the newsletter freebie is live.
+NEWSLETTER_URL = ""
+
+UPCOMING_XMAS = [
+    {
+        "title": "The Duke Who Wouldn't Keep Christmas",
+        "kind": "A full-length clean Regency Christmas romance",
+        "text": "Miles Aylward, Duke of Weyburn, and Emmeline Prowse, in a clean, closed-door Regency romance set over the Christmas season.",
+    },
+    {
+        "title": "The Hollybourne Christmas Novellas",
+        "kind": "Three linked clean Christmas novellas",
+        "text": "One Yorkshire dale village, from Christmas 1815 to Twelfth Night 1816. Light-hearted, full of banter and closed door, with a happily-ever-after in every one.",
+        "list": [
+            "Twelve Days to Keep an Earl",
+            "Twelve Nights to Trust a Duke",
+            "Twelve Days to Teach a Marquess",
+        ],
+    },
+]
+
+
+def build_xmas_page():
+    """Seasonal landing page for 'clean Christmas Regency romance' searches."""
+    url = f"{SITE}/{XMAS_SLUG}/"
+    title = "Clean Christmas Regency Romance Books | Emma Velott"
+    desc = "Clean Christmas Regency romance from Emma Velott. Snowbound dukes, Yorkshire villages and Twelfth Night happily-ever-afters, plus a snowy winter novella to read now."
+    rakish = next(b for b in BOOKS if b["slug"] == "the-rakish-viscounts-pretend-wife")
+
+    upcoming = []
+    for u in UPCOMING_XMAS:
+        items = ""
+        if u.get("list"):
+            items = "<ul class=\"xlist\">" + "".join(f"<li><em>{esc(t)}</em></li>" for t in u["list"]) + "</ul>"
+        upcoming.append(f"""      <article class="xcard">
+        <span class="kicker">Coming soon</span>
+        <h3>{esc(u['title'])}</h3>
+        <p class="subtitle">{esc(u['kind'])}</p>
+        <p>{esc(u['text'])}</p>
+        {items}
+      </article>""")
+
+    if NEWSLETTER_URL:
+        cta = f'<a class="btn btn-primary" href="{NEWSLETTER_URL}">Get release news by email</a>'
+        cta_note = "Join Emma's readers to hear the moment the Christmas books are out."
+    else:
+        cta = '<a class="btn btn-primary" href="https://www.instagram.com/emmavelott/" target="_blank" rel="noopener">Follow for release news</a>'
+        cta_note = "Follow Emma on Instagram to hear the moment the Christmas books are out."
+
+    ld = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "CollectionPage", "name": "Clean Christmas Regency Romance", "url": url, "description": desc},
+            {"@type": "BreadcrumbList", "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + "/"},
+                {"@type": "ListItem", "position": 2, "name": "Clean Christmas Regency Romance", "item": url}]},
+        ],
+    }
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Emma Velott">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/covers/{rakish['slug']}.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{head_assets('../')}
+<style>
+.xgrid{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}}
+.xcard{{background:var(--card);border-radius:8px;padding:30px 32px}}
+.xcard h3{{font-size:28px;margin:0 0 4px}}
+.xcard p{{margin:0 0 10px}}
+.xlist{{margin:6px 0 0;padding-left:20px}}
+.xlist li{{margin:0 0 4px}}
+@media (max-width:760px){{.xgrid{{grid-template-columns:1fr}}}}
+</style>
+<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{site_header('../')}
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span>Clean Christmas Regency Romance</nav>
+  </div>
+  <section class="section" style="padding-top:36px" aria-labelledby="x-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">Regency romance for the festive season</span>
+        <h1 id="x-title" style="font-size:clamp(36px,4.6vw,52px)">Clean Christmas Regency Romance</h1>
+        <p>Candlelit drawing rooms, snow on the lanes and a duke who would very much prefer to skip the whole season. Emma's Christmas Regency romances are clean and closed-door, with all the longing of the season and a happily-ever-after by Twelfth Night.</p>
+      </div>
+      <div class="xgrid">
+{chr(10).join(upcoming)}
+      </div>
+      <div style="text-align:center;margin-top:34px">
+        <p style="color:var(--ink-soft);margin:0 0 16px">{cta_note}</p>
+        {cta}
+      </div>
+    </div>
+  </section>
+  <section class="section tinted" aria-labelledby="now-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="now-title">A snowy winter read for right now</h2>
+        <p>Not a Christmas story, but snowed in at a coaching inn with a rakish viscount is the perfect warm-up for the season.</p>
+      </div>
+      <article class="book">
+        <div class="frame"><a href="../{rakish['slug']}/"><img src="../covers/{rakish['slug']}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(rakish)}"></a></div>
+        <div>
+          <span class="kicker">{esc(rakish['kicker'])}</span>
+          <h3><a href="../{rakish['slug']}/">{esc(rakish['title'])}</a></h3>
+          <p class="subtitle">{esc(rakish['subtitle'])}</p>
+          <p class="tropes">{tropes_html(rakish['tropes'])}</p>
+          <p class="blurb">{esc(rakish['short'])}</p>
+          {buy_row(rakish, chr(10) + '            <a class="more-link" href="../' + rakish['slug'] + '/">Read more about this book</a>')}
+        </div>
+      </article>
+      <p style="text-align:center;margin-top:20px"><a class="more-link" href="../{DUKE_SLUG}/">Or browse Emma's clean duke romances</a></p>
+    </div>
+  </section>
+</main>
+{site_footer('../')}
+</body>
+</html>
+"""
+
+
 def build_404():
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -483,9 +620,10 @@ def main():
     for b in BOOKS:
         write(os.path.join(OUT, b["slug"], "index.html"), build_book(b))
     write(os.path.join(OUT, DUKE_SLUG, "index.html"), build_duke_page())
+    write(os.path.join(OUT, XMAS_SLUG, "index.html"), build_xmas_page())
     write(os.path.join(OUT, "404.html"), build_404())
     shutil.copy("styles.css", OUT)
-    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS]
+    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"
