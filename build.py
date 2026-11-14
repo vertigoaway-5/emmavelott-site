@@ -214,7 +214,7 @@ def build_book(b):
                 "genre": ["Regency romance", "Historical romance", "Clean romance"],
                 "keywords": ", ".join(["clean Regency romance", "closed-door romance"] + [t.lower() for t in b["tropes"]]),
                 "inLanguage": "en",
-                "datePublished": "2026-06",
+                "datePublished": "2026-08",
                 "publisher": {"@type": "Person", "name": "Emma Velott"},
                 "bookFormat": "https://schema.org/EBook",
                 "offers": {"@type": "Offer", "price": b["price"], "priceCurrency": "USD",
@@ -299,7 +299,7 @@ def build_book(b):
         </div>
         <ul class="facts">
           <li><strong>Length</strong>{esc(b.get('length') or length)}</li>
-          <li><strong>Published</strong>{esc(b.get('published', ''))}, ebook, independently published</li>
+          <li><strong>Published</strong>{esc(b.get('published', ''))}, ebook, published by Emma Velott</li>
           <li><strong>Heat level</strong>Clean and closed-door</li>
           <li><strong>Ending</strong>Happily ever after</li>
           <li><strong>Formats</strong>EPUB and PDF, DRM free</li>
