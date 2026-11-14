@@ -36,10 +36,8 @@ jobs:
           fetch 2hnzs26m8lghuwo40n556uyzwjct a-jilted-bride-for-the-battle-scarred-duke
           ls -la _site/covers
 
-      - name: Copy site files
-        run: |
-          cp index.html robots.txt sitemap.xml _site/
-          if [ -f CNAME ]; then cp CNAME _site/; fi
+      - name: Build pages (home, book pages, sitemap, 404)
+        run: python3 build.py
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
