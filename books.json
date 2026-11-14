@@ -26,7 +26,8 @@
     ],
     "duke": false,
     "published": "August 2026",
-    "length": "120 pages"
+    "length": "120 pages",
+    "kobo": "https://www.kobo.com/us/en/ebook/the-rakish-viscount-s-pretend-wife"
   },
   {
     "slug": "a-fiery-widow-for-the-cold-duke",
@@ -55,7 +56,8 @@
     ],
     "duke": true,
     "published": "August 2026",
-    "length": "204 pages"
+    "length": "204 pages",
+    "kobo": "https://www.kobo.com/us/en/ebook/a-fiery-widow-for-the-cold-duke"
   },
   {
     "slug": "a-jilted-bride-for-the-battle-scarred-duke",
@@ -84,6 +86,7 @@
     ],
     "duke": true,
     "published": "August 2026",
-    "length": "220 pages"
+    "length": "220 pages",
+    "kobo": "https://www.kobo.com/us/en/ebook/a-jilted-bride-for-the-battle-scarred-duke"
   }
 ]

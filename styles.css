@@ -75,6 +75,7 @@ em.flourish{font-style:italic;font-weight:500;color:var(--green)}
 .buy-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
 .price{font-family:var(--display);font-size:32px;font-weight:600;color:var(--green)}
 .format{font-size:15px;color:var(--ink-soft);font-style:italic}
+.store-link{font-size:15px;color:var(--ink-soft);text-underline-offset:4px}
 .more-link,.excerpt-link{font-size:16px;color:var(--green);text-underline-offset:4px}
 @media (max-width:760px){.book{grid-template-columns:1fr;gap:24px}.frame{max-width:240px}}
 

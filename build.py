@@ -95,10 +95,13 @@ def tropes_html(tropes):
 
 
 def buy_row(b, extra=""):
+    kobo = ""
+    if b.get("kobo"):
+        kobo = f'\n            <a class="store-link" href="{b["kobo"]}" target="_blank" rel="noopener">Also on Kobo</a>'
     return f"""<div class="buy-row">
             <span class="price">${b['price']}</span>
             <a class="btn btn-primary" href="{b['buy']}">Buy the ebook</a>
-            <span class="format">EPUB &amp; PDF</span>{extra}
+            <span class="format">EPUB &amp; PDF</span>{kobo}{extra}
           </div>"""
 
 
@@ -217,6 +220,7 @@ def build_book(b):
                 "datePublished": "2026-08",
                 "publisher": {"@type": "Person", "name": "Emma Velott"},
                 "bookFormat": "https://schema.org/EBook",
+                "sameAs": [b["kobo"]] if b.get("kobo") else [],
                 "offers": {"@type": "Offer", "price": b["price"], "priceCurrency": "USD",
                            "availability": "https://schema.org/InStock", "url": b["buy"]},
             },
