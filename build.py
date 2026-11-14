@@ -49,7 +49,10 @@ def page_title(b):
 # ---------- shared pieces ----------
 
 def head_assets(prefix):
-    return f"""<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%232f4a3f'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-style='italic' font-size='28' fill='%23d8bd85' text-anchor='middle'%3EEV%3C/text%3E%3C/svg%3E">
+    return f"""<link rel="icon" href="{prefix}favicon.svg" type="image/svg+xml">
+<link rel="icon" href="{prefix}favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="{prefix}apple-touch-icon.png">
+<meta name="theme-color" content="#7a2e33">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{FONTS}">
@@ -607,6 +610,19 @@ def fetch_covers():
                         "-strip", "-interlace", "Plane", "-sampling-factor", "4:2:0", "-quality", "80", dst], check=True)
 
 
+def make_icons():
+    """PNG/ICO versions of favicon.svg for phones and older browsers."""
+    try:
+        bg = ["-background", "none"]
+        subprocess.run(["convert", *bg, "-density", "600", "favicon.svg", "-resize", "180x180",
+                        "-gravity", "center", "-background", "#f8f3e9", "-extent", "180x180",
+                        os.path.join(OUT, "apple-touch-icon.png")], check=True)
+        subprocess.run(["convert", *bg, "-density", "300", "favicon.svg", "-define",
+                        "icon:auto-resize=48,32,16", os.path.join(OUT, "favicon.ico")], check=True)
+    except Exception as e:
+        print("icon conversion skipped:", e)
+
+
 def write(path, text):
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     open(path, "w", encoding="utf-8").write(text)
@@ -623,6 +639,8 @@ def main():
     write(os.path.join(OUT, XMAS_SLUG, "index.html"), build_xmas_page())
     write(os.path.join(OUT, "404.html"), build_404())
     shutil.copy("styles.css", OUT)
+    shutil.copy("favicon.svg", OUT)
+    make_icons()
     urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
