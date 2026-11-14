@@ -23,20 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch and resize book covers from Gumroad
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
-          mkdir -p _site/covers
-          fetch () {
-            curl -fsSL "https://public-files.gumroad.com/$1" -o "/tmp/$2.src"
-            convert "/tmp/$2.src" -resize 500x800^ -gravity center -extent 500x800 -strip -quality 82 "_site/covers/$2.jpg"
-          }
-          fetch bzmswl2icknk9bis5xjgzcuwaxtu the-rakish-viscounts-pretend-wife
-          fetch fbaagnog4okhgmo6adsfo31mhzhs a-fiery-widow-for-the-cold-duke
-          fetch 2hnzs26m8lghuwo40n556uyzwjct a-jilted-bride-for-the-battle-scarred-duke
-          ls -la _site/covers
+      - name: Install image tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
 
-      - name: Build pages (home, book pages, sitemap, 404)
+      - name: Build site (covers, home, book pages, sitemap, 404)
         run: python3 build.py
 
       - uses: actions/configure-pages@v5

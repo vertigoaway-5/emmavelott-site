@@ -1,143 +1,86 @@
 """Builds the Emma Velott site into _site/.
 
-- copies index.html (adding links from the home page to each book page)
-- creates one page per book at /<slug>/
-- writes robots.txt, sitemap.xml and 404.html
+Content lives in two files:
+  books.json    one entry per book (title, prices, Gumroad link, blurb...)
+  reviews.json  reader reviews, e.g.
+                {"book": "a-fiery-widow-for-the-cold-duke",
+                 "quote": "I couldn't put it down.",
+                 "name": "Sarah", "source": "Instagram",
+                 "url": "https://www.instagram.com/...", "stars": 5}
+                ("url" and "stars" are optional)
 
-To add a new book: add an entry to BOOKS below, add its cover to the
-workflow, and add its card to index.html.
+To add a book, add it to books.json. Its cover, page, home-page card and
+sitemap entry are all created automatically from that entry.
+
+Run locally with SKIP_COVERS=1 to skip downloading covers.
 """
-import html, json, os, re, shutil, datetime
+import datetime
+import html
+import json
+import os
+import shutil
+import subprocess
 
 SITE = "https://emmavelott.com"
 OUT = "_site"
 TODAY = datetime.date.today().isoformat()
+PRIORITY = 'fetchpriority="high" '
+FONTS = "https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Open+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
 
-BOOKS = [
-    {
-        "slug": "the-rakish-viscounts-pretend-wife",
-        "title": "The Rakish Viscount's Pretend Wife",
-        "anchor": "rakish-viscount",
-        "kicker": "A clean fake-marriage Regency novella",
-        "kind": "novella",
-        "tropes": ["Fake marriage", "One bed", "Forced proximity", "Snowed in"],
-        "meta": "A clean, closed-door Regency novella. A governess and a rake snowed in at a coaching inn agree to pose as husband and wife. Ebook by Emma Velott.",
-        "buy": "https://emaanspark835.gumroad.com/l/rakish-viscount-pretend-wife",
-        "hook": "“Sir! You are in my bed.”",
-        "blurb": [
-            "Six years of relentless propriety have kept Delilah Pearce employed, respectable, and entirely alone. Then a snowstorm strands her at a coaching inn, and she climbs the stairs to the room she paid for and finds a stranger sprawled across the mattress, one boot on, snoring like a man trying to expel his own soul.",
-            "Simon Cathcart has woken in a great many beds that were not his. This is the first one that arrives with a wife attached, since he apparently announced the imminent arrival of one before the brandy finished with him, and the innkeeper believed every word.",
-            "The storm will not lift for days, and a governess caught sharing a room with a rake has no career left to speak of. So Delilah sets her terms. He will play the adequate husband, keep to the left side of the bed, and keep his hands, his remarks, and his eyebrows entirely to himself.",
-            "The terms hold rather better than either of them expected. What refuses to hold is everything underneath them.",
-            "A clean, closed-door Regency novella about a fake marriage, a snowbound inn, and two people who agreed on the rules long before they understood the cost.",
-        ],
-    },
-    {
-        "slug": "a-fiery-widow-for-the-cold-duke",
-        "title": "A Fiery Widow for the Cold Duke",
-        "anchor": "fiery-widow",
-        "kicker": "A clean grumpy-duke Regency romance",
-        "kind": "novel",
-        "tropes": ["Grumpy duke", "Widow heroine", "Marriage of convenience", "Housekeeper and duke"],
-        "meta": "A clean, closed-door Regency romance. A widowed housekeeper refuses to be cowed by the cold Duke of Wrenwick, and an arrangement becomes a marriage. By Emma Velott.",
-        "buy": "https://emaanspark835.gumroad.com/l/fiery-widow-cold-duke",
-        "hook": "She has run out of patience. He has run out of excuses.",
-        "blurb": [
-            "Fourteen months of widowhood have left Anastasia Reddington with two rented rooms, a ledger that refuses to balance, and a temper she has swallowed so often it sits in her like a coal that will not go out. When a position at Wrenwick Hall is offered at twice the going rate, she takes it, and she does not ask why nobody else would.",
-            "Alexander, Duke of Wrenwick, has emptied his own house. Servants flinch. Footmen leave. The table is laid every morning for a man who never eats at it. He expects the new housekeeper to last a week.",
-            "She lasts three days before telling him, to his face, that fear is the most expensive economy he has ever practised.",
-            "What begins as a trial becomes an arrangement, and the arrangement becomes a marriage neither of them planned to want. Then a charming young clergyman takes an interest in the new duchess, an old secret surfaces that someone has been saving for years, and Anastasia discovers how much of her husband's coldness was only ever armour.",
-            "A clean, closed-door Regency romance with a grumpy duke, a widow who has finally run out of saying nothing, and a hard-won happily ever after.",
-        ],
-    },
-    {
-        "slug": "a-jilted-bride-for-the-battle-scarred-duke",
-        "title": "A Jilted Bride for the Battle-Scarred Duke",
-        "anchor": "jilted-bride",
-        "kicker": "A clean slow-burn Regency romance",
-        "kind": "novel",
-        "tropes": ["Scarred hero", "Jilted bride", "Reclusive duke", "Slow-building love"],
-        "meta": "A clean, closed-door Regency romance. A jilted vicar's daughter becomes companion at Penwythe, home of a reclusive, war-scarred duke. By Emma Velott.",
-        "buy": "https://emaanspark835.gumroad.com/l/jilted-bride-battle-scarred-duke",
-        "hook": "Jilted in a ballroom with three hundred people watching, and the first thing she feels is not heartbreak.",
-        "blurb": [
-            "Ariana Raye is a vicar's daughter with her father's debts hanging round her neck, and when Lionel Lockhart withdraws from their engagement in the middle of a ball, what rises in her once the shock clears is a clean and unladylike fury. A ruined woman takes what work she can get, which is how she comes to be rattling toward Penwythe in a hired coach while the driver explains that nobody has been past those gates in four years.",
-            "Ronan Kingsford, sixth Duke of Penwythe, came back from the war with a hand that will not close, a face he refuses to look at, and four rules that keep him upright. Rise at five. Dress without help. Do not leave the east wing. Do not look in mirrors.",
-            "The rules were working perfectly well until a voice started carrying through the plaster.",
-            "Hired as companion to the duke's young sister, Ariana has no intention of being anybody's cure. She simply declines to pretend the man does not exist. What grows between them is slow, reluctant and thoroughly inconvenient, and it is very nearly enough, right until the man who jilted her walks back through the door with a use for her after all.",
-            "A clean, closed-door Regency romance with a scarred recluse, a heroine who refuses to be made small, and a happily ever after earned the hard way.",
-        ],
-    },
-]
-
-EXTRA_CSS = """<style>
-.book h3 a,.mini h3 a{text-decoration:none;color:inherit}
-.book h3 a:hover,.mini h3 a:hover{color:var(--claret)}
-.more-link{font-size:16px;color:var(--green);text-underline-offset:4px}
-.crumbs{font-size:14px;color:var(--ink-soft);padding:22px 0 0}
-.crumbs a{color:var(--ink-soft)}
-.crumbs span{margin:0 8px}
-.bp{padding:40px 0 70px}
-.bp-grid{display:grid;grid-template-columns:340px 1fr;gap:60px;align-items:start}
-.bp-cover img{box-shadow:0 24px 40px -22px rgba(43,38,34,.6)}
-.bp h1{font-size:clamp(36px,4.6vw,52px);margin:0 0 10px}
-.hook{font-family:var(--display);font-style:italic;font-size:24px;color:var(--green);margin:18px 0 18px}
-.bp .buy-row{margin:22px 0 10px}
-.small{font-size:15px;color:var(--ink-soft);margin:0}
-.facts{list-style:none;padding:0;margin:26px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 28px;font-size:16px}
-.facts li strong{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--claret)}
-.bp-blurb p{margin:0 0 16px;max-width:64ch}
-.howmini{background:var(--card);border-radius:8px;padding:26px 30px;margin-top:34px}
-.howmini h2{font-size:26px;margin:0 0 10px}
-.howmini ol{margin:0;padding-left:20px}
-.howmini li{margin:0 0 6px}
-.more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px}
-.mini{display:grid;grid-template-columns:130px 1fr;gap:24px;align-items:start}
-.mini img{box-shadow:0 16px 26px -16px rgba(43,38,34,.55)}
-.mini h3{font-size:24px;margin:0 0 8px}
-.mini p{margin:0 0 12px;font-size:16px;color:var(--ink-soft)}
-@media (max-width:860px){.bp-grid{grid-template-columns:1fr;gap:34px}.bp-cover{max-width:280px}.more-grid{grid-template-columns:1fr}.facts{grid-template-columns:1fr}}
-</style>
-"""
+BOOKS = json.load(open("books.json", encoding="utf-8"))
+REVIEWS = json.load(open("reviews.json", encoding="utf-8"))
+SLUGS = {b["slug"] for b in BOOKS}
+for r in REVIEWS:
+    assert r.get("book") in SLUGS, f"review for unknown book: {r.get('book')}"
 
 
 def esc(s):
     return html.escape(s, quote=True)
 
 
-def head_assets(index_html):
-    """Font links and all <style> blocks from the home page, so every page matches."""
-    links = re.findall(r'<link rel="preconnect"[^>]*>|<link href="https://fonts[^>]*>', index_html)
-    styles = re.findall(r"<style>.*?</style>", index_html, flags=re.S)
-    icon = re.search(r'<link rel="icon"[^>]*>', index_html).group(0)
-    return "\n".join([icon] + links + styles) + "\n" + EXTRA_CSS
+def cover_alt(b):
+    return f"Cover of {esc(b['title'])}, {esc(b['subtitle'].lower())} by Emma Velott"
 
 
-def site_header(prefix):
-    return f"""<div class="strip">Ebooks delivered to your inbox in moments<em>&#10086;</em>EPUB &amp; PDF<em>&#10086;</em>Read on any device</div>
+def page_title(b):
+    return f"{b['title']}: {b['subtitle']} | Emma Velott"
+
+
+# ---------- shared pieces ----------
+
+def head_assets(prefix):
+    return f"""<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%232f4a3f'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-style='italic' font-size='28' fill='%23d8bd85' text-anchor='middle'%3EEV%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="{FONTS}">
+<link rel="stylesheet" href="{prefix}styles.css">"""
+
+
+def site_header(home):
+    return f"""<div class="strip">Ebooks delivered to your inbox in moments<span>&#183;</span>EPUB &amp; PDF<span>&#183;</span>Read on any device</div>
 <header class="masthead">
   <div class="wrap">
     <p class="tag">Clean Regency Romance</p>
-    <a class="name" href="{prefix}">Emma Velott</a>
+    <a class="name" href="{home or './'}">Emma Velott</a>
   </div>
   <nav class="mainnav" aria-label="Main">
     <ul>
-      <li><a href="{prefix}#books">The Books</a></li>
-      <li><a href="{prefix}#how">How It Works</a></li>
-      <li><a href="{prefix}#indie">A Note from Emma</a></li>
-      <li><a href="{prefix}#follow">Follow</a></li>
+      <li><a href="{home}#books">The Books</a></li>
+      <li><a href="{home}#how">How It Works</a></li>
+      <li><a href="{home}#indie">A Note from Emma</a></li>
+      <li><a href="{home}#follow">Follow</a></li>
     </ul>
   </nav>
 </header>"""
 
 
-def site_footer(prefix):
+def site_footer(home):
     return f"""<footer>
   <div class="wrap">
-    <a class="name" href="{prefix}">Emma Velott</a>
+    <a class="name" href="{home or './'}">Emma Velott</a>
     <ul>
-      <li><a href="{prefix}#books">The Books</a></li>
-      <li><a href="{prefix}#how">How It Works</a></li>
+      <li><a href="{home}#books">The Books</a></li>
+      <li><a href="{home}#how">How It Works</a></li>
       <li><a href="https://www.instagram.com/emmavelott/" target="_blank" rel="noopener">Instagram</a></li>
       <li><a href="https://emaanspark835.gumroad.com/" target="_blank" rel="noopener">Shop</a></li>
     </ul>
@@ -146,11 +89,115 @@ def site_footer(prefix):
 </footer>"""
 
 
-def book_page(b, assets):
+def tropes_html(tropes):
+    return "<span>&#183;</span>".join(esc(t) for t in tropes)
+
+
+def buy_row(b, extra=""):
+    return f"""<div class="buy-row">
+            <span class="price">${b['price']}</span>
+            <a class="btn btn-primary" href="{b['buy']}">Buy the ebook</a>
+            <span class="format">EPUB &amp; PDF</span>{extra}
+          </div>"""
+
+
+def review_cards(reviews, show_book):
+    out = []
+    by_slug = {b["slug"]: b for b in BOOKS}
+    for r in reviews:
+        who = esc(r["name"])
+        if r.get("url"):
+            who = f'<a href="{esc(r["url"])}" target="_blank" rel="noopener nofollow">{who}</a>'
+        src = f", on {esc(r['source'])}" if r.get("source") else ""
+        book = ""
+        if show_book:
+            b = by_slug[r["book"]]
+            book = f' about <a href="{b["slug"]}/"><em>{esc(b["title"])}</em></a>'
+        stars = f'<div class="stars" aria-label="{int(r["stars"])} out of 5 stars">{"&#9733;" * int(r["stars"])}</div>' if r.get("stars") else ""
+        out.append(f"""<figure class="review">
+  {stars}<blockquote>&#8220;{esc(r['quote'])}&#8221;</blockquote>
+  <figcaption>{who}{src}{book}</figcaption>
+</figure>""")
+    return "\n".join(out)
+
+
+# ---------- home page ----------
+
+def build_home():
+    s = open("index.html", encoding="utf-8").read()
+    covers = "\n".join(
+        f'        <a href="{b["slug"]}/"><img src="covers/{b["slug"]}.jpg" width="500" height="800" '
+        f'{PRIORITY if i == 0 else ""}alt="{cover_alt(b)}"></a>'
+        for i, b in enumerate(BOOKS)
+    )
+    cards = "\n".join(
+        f"""      <article class="book" id="{b['slug']}">
+        <div class="frame"><a href="{b['slug']}/"><img src="covers/{b['slug']}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(b)}"></a></div>
+        <div>
+          <span class="kicker">{esc(b['kicker'])}</span>
+          <h3><a href="{b['slug']}/">{esc(b['title'])}</a></h3>
+          <p class="subtitle">{esc(b['subtitle'])}</p>
+          <p class="tropes">{tropes_html(b['tropes'][:3])}</p>
+          <p class="blurb">{esc(b['short'])}</p>
+          {buy_row(b, chr(10) + '            <a class="more-link" href="' + b['slug'] + '/">Read more about this book</a>')}
+        </div>
+      </article>"""
+        for b in BOOKS
+    )
+    reviews = ""
+    if REVIEWS:
+        reviews = f"""  <section class="section" id="reviews" aria-labelledby="reviews-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="reviews-title">What readers are saying</h2>
+        <p>Kind words from readers on Instagram and beyond.</p>
+      </div>
+      <div class="reviews">
+{review_cards(REVIEWS[:6], show_book=True)}
+      </div>
+    </div>
+  </section>"""
+    schema = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "WebSite", "@id": SITE + "/#site", "name": "Emma Velott", "url": SITE + "/"},
+            {"@type": "Person", "@id": SITE + "/#emma", "name": "Emma Velott", "url": SITE + "/",
+             "jobTitle": "Author", "knowsAbout": ["Regency romance", "Clean romance", "Historical romance"],
+             "sameAs": ["https://www.instagram.com/emmavelott/"]},
+            {"@type": "ItemList", "name": "Books by Emma Velott", "itemListElement": [
+                {"@type": "ListItem", "position": i + 1, "url": f"{SITE}/{b['slug']}/", "name": b["title"]}
+                for i, b in enumerate(BOOKS)]},
+            {"@type": "FAQPage", "mainEntity": [
+                {"@type": "Question", "name": "Can I read it on my Kindle?",
+                 "acceptedAnswer": {"@type": "Answer", "text": "Yes. Use Amazon's free Send to Kindle service to add the EPUB to your Kindle library."}},
+                {"@type": "Question", "name": "Can I buy from the UK?",
+                 "acceptedAnswer": {"@type": "Answer", "text": "Yes. Prices are in US dollars and your bank or card converts them automatically."}},
+                {"@type": "Question", "name": "The email hasn't arrived. What now?",
+                 "acceptedAnswer": {"@type": "Answer", "text": "Check your spam or promotions folder, or use the 'Already bought this? Get your download link' option on the book's Gumroad page."}}]},
+        ],
+    }
+    for marker, value in {
+        "<!-- HEAD_ASSETS -->": head_assets(""),
+        "<!-- HOME_SCHEMA -->": f'<script type="application/ld+json">{json.dumps(schema, ensure_ascii=False)}</script>',
+        "<!-- HEADER -->": site_header(""),
+        "<!-- FOOTER -->": site_footer(""),
+        "<!-- HERO_COVERS -->": covers,
+        "<!-- BOOK_CARDS -->": cards,
+        "<!-- REVIEWS -->": reviews,
+    }.items():
+        assert marker in s, marker
+        s = s.replace(marker, value)
+    return s
+
+
+# ---------- book pages ----------
+
+def build_book(b):
     url = f"{SITE}/{b['slug']}/"
     img = f"{SITE}/covers/{b['slug']}.jpg"
     others = [o for o in BOOKS if o["slug"] != b["slug"]]
     length = "Novella" if b["kind"] == "novella" else "Full-length novel"
+    reviews = [r for r in REVIEWS if r["book"] == b["slug"]]
     ld = {
         "@context": "https://schema.org",
         "@graph": [
@@ -158,21 +205,17 @@ def book_page(b, assets):
                 "@type": "Book",
                 "@id": url + "#book",
                 "name": b["title"],
+                "alternativeHeadline": b["subtitle"],
                 "url": url,
                 "image": img,
                 "description": " ".join(b["blurb"]),
-                "author": {"@type": "Person", "name": "Emma Velott", "url": SITE + "/"},
+                "author": {"@type": "Person", "@id": SITE + "/#emma", "name": "Emma Velott", "url": SITE + "/"},
                 "genre": ["Regency romance", "Historical romance", "Clean romance"],
                 "keywords": ", ".join(["clean Regency romance", "closed-door romance"] + [t.lower() for t in b["tropes"]]),
                 "inLanguage": "en",
                 "bookFormat": "https://schema.org/EBook",
-                "offers": {
-                    "@type": "Offer",
-                    "price": "3.99",
-                    "priceCurrency": "USD",
-                    "availability": "https://schema.org/InStock",
-                    "url": b["buy"],
-                },
+                "offers": {"@type": "Offer", "price": b["price"], "priceCurrency": "USD",
+                           "availability": "https://schema.org/InStock", "url": b["buy"]},
             },
             {
                 "@type": "BreadcrumbList",
@@ -184,40 +227,50 @@ def book_page(b, assets):
             },
         ],
     }
-    tropes = '<span>&#183;</span>'.join(esc(t) for t in b["tropes"])
-    blurb = "\n".join(f"<p>{esc(p)}</p>" for p in b["blurb"])
+    blurb = "\n".join(f"          <p>{esc(p)}</p>" for p in b["blurb"])
+    review_block = ""
+    if reviews:
+        review_block = f"""  <section class="section" aria-labelledby="rev-title">
+    <div class="wrap">
+      <div class="section-head"><h2 id="rev-title">What readers are saying</h2></div>
+      <div class="reviews">
+{review_cards(reviews, show_book=False)}
+      </div>
+    </div>
+  </section>"""
     more = "\n".join(
-        f"""<article class="mini">
-  <a href="../{o['slug']}/"><img src="../covers/{o['slug']}.jpg" width="500" height="800" loading="lazy" alt="Cover of {esc(o['title'])} by Emma Velott"></a>
-  <div>
-    <h3><a href="../{o['slug']}/">{esc(o['title'])}</a></h3>
-    <p>{esc(o['hook'])}</p>
-    <a class="more-link" href="../{o['slug']}/">See the book</a>
-  </div>
-</article>"""
+        f"""        <article class="mini">
+          <a href="../{o['slug']}/"><img src="../covers/{o['slug']}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(o)}"></a>
+          <div>
+            <h3><a href="../{o['slug']}/">{esc(o['title'])}</a></h3>
+            <p>{esc(o['hook'])}</p>
+            <a class="more-link" href="../{o['slug']}/">See the book</a>
+          </div>
+        </article>"""
         for o in others
     )
+    t = esc(page_title(b))
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{esc(b['title'])} | Clean Regency Romance by Emma Velott</title>
+<title>{t}</title>
 <meta name="description" content="{esc(b['meta'])}">
 <link rel="canonical" href="{url}">
 <meta property="og:type" content="book">
 <meta property="og:site_name" content="Emma Velott">
-<meta property="og:title" content="{esc(b['title'])} by Emma Velott">
+<meta property="og:title" content="{t}">
 <meta property="og:description" content="{esc(b['meta'])}">
 <meta property="og:url" content="{url}">
 <meta property="og:image" content="{img}">
-<meta property="og:image:alt" content="Cover of {esc(b['title'])} by Emma Velott">
+<meta property="og:image:alt" content="{cover_alt(b)}">
 <meta property="book:author" content="Emma Velott">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{esc(b['title'])} by Emma Velott">
+<meta name="twitter:title" content="{t}">
 <meta name="twitter:description" content="{esc(b['meta'])}">
 <meta name="twitter:image" content="{img}">
-{assets}
+{head_assets('../')}
 <script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
 </head>
 <body>
@@ -229,16 +282,13 @@ def book_page(b, assets):
   </div>
   <article class="bp">
     <div class="wrap bp-grid">
-      <div class="bp-cover"><img src="../covers/{b['slug']}.jpg" width="500" height="800" alt="Cover of {esc(b['title'])} by Emma Velott"></div>
+      <div class="bp-cover"><img src="../covers/{b['slug']}.jpg" width="500" height="800" fetchpriority="high" alt="{cover_alt(b)}"></div>
       <div>
-        <p class="kicker">{esc(b['kicker'])}</p>
+        <span class="kicker">{esc(b['kicker'])}</span>
         <h1>{esc(b['title'])}</h1>
-        <p class="tropes">{tropes}</p>
-        <div class="buy-row">
-          <span class="price">$3.99</span>
-          <a class="btn btn-primary" href="{b['buy']}">Buy the ebook</a>
-          <span class="format">EPUB &amp; PDF</span>
-        </div>
+        <p class="subtitle">{esc(b['subtitle'])} by Emma Velott</p>
+        <p class="tropes">{tropes_html(b['tropes'])}</p>
+        {buy_row(b)}
         <p class="small">Secure checkout through Gumroad. Your download link is emailed to you straight away.</p>
         <p class="hook">{esc(b['hook'])}</p>
         <div class="bp-blurb">
@@ -262,9 +312,10 @@ def book_page(b, assets):
       </div>
     </div>
   </article>
+{review_block}
   <section class="section tinted" aria-labelledby="more-title">
     <div class="wrap">
-      <div class="section-head"><h2 id="more-title">More from Emma Velott</h2></div>
+      <div class="section-head"><h2 id="more-title">More clean Regency romance from Emma Velott</h2></div>
       <div class="more-grid">
 {more}
       </div>
@@ -277,7 +328,7 @@ def book_page(b, assets):
 """
 
 
-def page_404(assets):
+def build_404():
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -285,13 +336,13 @@ def page_404(assets):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Page not found | Emma Velott</title>
 <meta name="robots" content="noindex">
-{assets}
+{head_assets('/')}
 </head>
 <body>
 {site_header('/')}
 <main id="main" class="section" style="text-align:center">
   <div class="wrap narrow">
-    <h1 style="font-size:44px;margin-bottom:12px">This page has wandered off</h1>
+    <h1 style="font-size:42px;margin-bottom:12px">This page has wandered off</h1>
     <p>Perhaps it eloped. The books, at least, are right where you left them.</p>
     <p style="margin-top:24px"><a class="btn btn-primary" href="/">Back to the books</a></p>
   </div>
@@ -302,68 +353,39 @@ def page_404(assets):
 """
 
 
-def link_home_page(index_html):
-    """Turn titles and covers on the home page into links to each book page."""
-    s = index_html
+def fetch_covers():
+    os.makedirs(os.path.join(OUT, "covers"), exist_ok=True)
     for b in BOOKS:
-        t = esc(b["title"]).replace("&#x27;", "'")
-        s = s.replace(f"<h3>{t}</h3>", f'<h3><a href="{b["slug"]}/">{t}</a></h3>', 1)
-        s = re.sub(
-            r'(<div class="frame">)(<img src="covers/' + re.escape(b["slug"]) + r'\.jpg"[^>]*>)(</div>)',
-            r'\1<a href="' + b["slug"] + r'/">\2</a>\3',
-            s,
-            count=1,
-        )
-        s = s.replace(
-            f'href="#{b["anchor"]}"><img',
-            f'href="{b["slug"]}/"><img',
-            1,
-        )
-        s = re.sub(
-            r'(<a class="btn btn-primary" href="' + re.escape(b["buy"]) + r'">Buy the ebook</a>\s*<span class="format">EPUB &amp; PDF</span>)',
-            r'\1\n            <a class="more-link" href="' + b["slug"] + r'/">Read more about this book</a>',
-            s,
-            count=1,
-        )
-        # structured data on the home page should point at the book's own page
-        s = s.replace(
-            f'"url":"{b["buy"]}","offers"',
-            f'"url":"{SITE}/{b["slug"]}/","image":"{SITE}/covers/{b["slug"]}.jpg","offers"',
-            1,
-        )
-    s = s.replace(
-        "<title>Emma Velott | Clean Regency Romance Author</title>",
-        "<title>Emma Velott | Clean Regency Romance Books and Ebooks</title>",
-        1,
-    )
-    s = s.replace(
-        '<meta name="twitter:card"',
-        '<meta property="og:site_name" content="Emma Velott">\n<meta name="twitter:card"',
-        1,
-    )
-    s = s.replace("</head>", EXTRA_CSS + "</head>", 1)
-    return s
+        src = f"/tmp/{b['slug']}.src"
+        dst = os.path.join(OUT, "covers", b["slug"] + ".jpg")
+        subprocess.run(["curl", "-fsSL", "https://public-files.gumroad.com/" + b["gumroad_cover_id"], "-o", src], check=True)
+        subprocess.run(["convert", src, "-resize", "500x800^", "-gravity", "center", "-extent", "500x800",
+                        "-strip", "-interlace", "Plane", "-sampling-factor", "4:2:0", "-quality", "80", dst], check=True)
+
+
+def write(path, text):
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    open(path, "w", encoding="utf-8").write(text)
 
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    index_html = open("index.html", encoding="utf-8").read()
-    assets = head_assets(index_html)
-    open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(link_home_page(index_html))
+    if not os.environ.get("SKIP_COVERS"):
+        fetch_covers()
+    write(os.path.join(OUT, "index.html"), build_home())
     for b in BOOKS:
-        d = os.path.join(OUT, b["slug"])
-        os.makedirs(d, exist_ok=True)
-        open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(book_page(b, assets))
-    open(os.path.join(OUT, "404.html"), "w", encoding="utf-8").write(page_404(assets))
+        write(os.path.join(OUT, b["slug"], "index.html"), build_book(b))
+    write(os.path.join(OUT, "404.html"), build_404())
+    shutil.copy("styles.css", OUT)
     urls = [SITE + "/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"
-    open(os.path.join(OUT, "sitemap.xml"), "w", encoding="utf-8").write(sm)
-    shutil.copy("robots.txt", OUT)
+    write(os.path.join(OUT, "sitemap.xml"), sm)
+    write(os.path.join(OUT, "robots.txt"), f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n")
     if os.path.exists("CNAME"):
         shutil.copy("CNAME", OUT)
-    print("built", len(BOOKS), "book pages")
+    print("built home +", len(BOOKS), "book pages,", len(REVIEWS), "reviews")
 
 
 if __name__ == "__main__":
