@@ -8,8 +8,13 @@
     "price": "3.99",
     "buy": "https://emaanspark835.gumroad.com/l/rakish-viscount-pretend-wife",
     "gumroad_cover_id": "bzmswl2icknk9bis5xjgzcuwaxtu",
-    "tropes": ["Fake marriage", "One bed", "Forced proximity", "Snowed in"],
-    "meta": "A clean, closed-door Regency romance novella. A governess and a rake snowed in at a coaching inn agree to pose as husband and wife. Ebook by Emma Velott.",
+    "tropes": [
+      "Fake marriage",
+      "One bed",
+      "Forced proximity",
+      "Snowed in"
+    ],
+    "meta": "A clean Regency romance novella. A governess and a rakish viscount, snowed in at a coaching inn, pose as husband and wife. By Emma Velott.",
     "short": "Stranded at a snowbound inn, governess Delilah Pearce agrees to pose as Simon Cathcart's wife to protect her reputation. Their rules are quite clear. Their feelings prove less cooperative.",
     "hook": "“Sir! You are in my bed.”",
     "blurb": [
@@ -18,19 +23,25 @@
       "The storm will not lift for days, and a governess caught sharing a room with a rake has no career left to speak of. So Delilah sets her terms. He will play the adequate husband, keep to the left side of the bed, and keep his hands, his remarks, and his eyebrows entirely to himself.",
       "The terms hold rather better than either of them expected. What refuses to hold is everything underneath them.",
       "A clean, closed-door Regency novella about a fake marriage, a snowbound inn, and two people who agreed on the rules long before they understood the cost."
-    ]
+    ],
+    "duke": false
   },
   {
     "slug": "a-fiery-widow-for-the-cold-duke",
     "title": "A Fiery Widow for the Cold Duke",
-    "subtitle": "A Clean Regency Romance",
-    "kicker": "Grumpy duke meets fiery widow",
+    "subtitle": "A Clean Regency Duke Romance",
+    "kicker": "Grumpy duke romance",
     "kind": "novel",
     "price": "3.99",
     "buy": "https://emaanspark835.gumroad.com/l/fiery-widow-cold-duke",
     "gumroad_cover_id": "fbaagnog4okhgmo6adsfo31mhzhs",
-    "tropes": ["Grumpy duke", "Widow heroine", "Marriage of convenience", "Housekeeper and duke"],
-    "meta": "A clean, closed-door Regency romance. A widowed housekeeper refuses to be cowed by the cold Duke of Wrenwick, and an arrangement becomes a marriage. By Emma Velott.",
+    "tropes": [
+      "Grumpy duke",
+      "Widow heroine",
+      "Marriage of convenience",
+      "Housekeeper and duke"
+    ],
+    "meta": "A clean grumpy duke romance. A fiery widow becomes housekeeper to the cold Duke of Wrenwick, and an arrangement turns into marriage. By Emma Velott.",
     "short": "Widow Anastasia Reddington accepts a position at Wrenwick Hall and refuses to be intimidated by its cold duke. An unexpected marriage brings her closer to the man behind his carefully guarded silence.",
     "hook": "She has run out of patience. He has run out of excuses.",
     "blurb": [
@@ -39,19 +50,25 @@
       "She lasts three days before telling him, to his face, that fear is the most expensive economy he has ever practised.",
       "What begins as a trial becomes an arrangement, and the arrangement becomes a marriage neither of them planned to want. Then a charming young clergyman takes an interest in the new duchess, an old secret surfaces that someone has been saving for years, and Anastasia discovers how much of her husband's coldness was only ever armour.",
       "A clean, closed-door Regency romance with a grumpy duke, a widow who has finally run out of saying nothing, and a hard-won happily ever after."
-    ]
+    ],
+    "duke": true
   },
   {
     "slug": "a-jilted-bride-for-the-battle-scarred-duke",
     "title": "A Jilted Bride for the Battle-Scarred Duke",
-    "subtitle": "A Clean Regency Romance",
-    "kicker": "Slow-burn love with a reclusive duke",
+    "subtitle": "A Clean Regency Duke Romance",
+    "kicker": "Scarred duke romance",
     "kind": "novel",
     "price": "3.99",
     "buy": "https://emaanspark835.gumroad.com/l/jilted-bride-battle-scarred-duke",
     "gumroad_cover_id": "2hnzs26m8lghuwo40n556uyzwjct",
-    "tropes": ["Scarred hero", "Jilted bride", "Reclusive duke", "Slow-building love"],
-    "meta": "A clean, closed-door Regency romance. A jilted vicar's daughter becomes companion at Penwythe, home of a reclusive, war-scarred duke. By Emma Velott.",
+    "tropes": [
+      "Scarred duke",
+      "Jilted bride",
+      "Reclusive hero",
+      "Slow-burn love"
+    ],
+    "meta": "A clean scarred duke romance. A jilted vicar's daughter becomes companion at Penwythe, home of a reclusive, battle-scarred duke. By Emma Velott.",
     "short": "After a public jilting, Ariana Raye becomes companion to a duke's young sister. Her new employer, Ronan Kingsford, has retreated from the world. Ariana's refusal to overlook him begins a slow and unexpected connection.",
     "hook": "Jilted in a ballroom with three hundred people watching, and the first thing she feels is not heartbreak.",
     "blurb": [
@@ -60,6 +77,7 @@
       "The rules were working perfectly well until a voice started carrying through the plaster.",
       "Hired as companion to the duke's young sister, Ariana has no intention of being anybody's cure. She simply declines to pretend the man does not exist. What grows between them is slow, reluctant and thoroughly inconvenient, and it is very nearly enough, right until the man who jilted her walks back through the door with a use for her after all.",
       "A clean, closed-door Regency romance with a scarred recluse, a heroine who refuses to be made small, and a happily ever after earned the hard way."
-    ]
+    ],
+    "duke": true
   }
 ]

@@ -80,6 +80,7 @@ def site_footer(home):
     <a class="name" href="{home or './'}">Emma Velott</a>
     <ul>
       <li><a href="{home}#books">The Books</a></li>
+      <li><a href="{home}clean-duke-romance-books/">Clean Duke Romances</a></li>
       <li><a href="{home}#how">How It Works</a></li>
       <li><a href="https://www.instagram.com/emmavelott/" target="_blank" rel="noopener">Instagram</a></li>
       <li><a href="https://emaanspark835.gumroad.com/" target="_blank" rel="noopener">Shop</a></li>
@@ -328,6 +329,105 @@ def build_book(b):
 """
 
 
+DUKE_SLUG = "clean-duke-romance-books"
+
+
+def build_duke_page():
+    """Landing page for searches like 'clean duke romance books'."""
+    url = f"{SITE}/{DUKE_SLUG}/"
+    dukes = [b for b in BOOKS if b.get("duke")]
+    others = [b for b in BOOKS if not b.get("duke")]
+
+    def card(b):
+        return f"""      <article class="book">
+        <div class="frame"><a href="../{b['slug']}/"><img src="../covers/{b['slug']}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(b)}"></a></div>
+        <div>
+          <span class="kicker">{esc(b['kicker'])}</span>
+          <h3><a href="../{b['slug']}/">{esc(b['title'])}</a></h3>
+          <p class="subtitle">{esc(b['subtitle'])}</p>
+          <p class="tropes">{tropes_html(b['tropes'])}</p>
+          <p class="blurb">{esc(b['short'])}</p>
+          {buy_row(b, chr(10) + '            <a class="more-link" href="../' + b['slug'] + '/">Read more about this book</a>')}
+        </div>
+      </article>"""
+
+    title = "Clean Duke Romance Books | Regency Romances by Emma Velott"
+    desc = "Clean Regency duke romance books with grumpy dukes, scarred dukes and happily-ever-afters. Closed-door historical romance ebooks by Emma Velott."
+    ld = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "CollectionPage", "name": "Clean Duke Romance Books", "url": url, "description": desc,
+             "about": "Clean Regency duke romance",
+             "mainEntity": {"@type": "ItemList", "itemListElement": [
+                 {"@type": "ListItem", "position": i + 1, "url": f"{SITE}/{b['slug']}/", "name": b["title"]}
+                 for i, b in enumerate(dukes)]}},
+            {"@type": "BreadcrumbList", "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + "/"},
+                {"@type": "ListItem", "position": 2, "name": "Clean Duke Romance Books", "item": url}]},
+        ],
+    }
+    also = ""
+    if others:
+        also = f"""  <section class="section tinted" aria-labelledby="also-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="also-title">Not a duke, but you'll forgive him</h2>
+        <p>A clean Regency novella with a rakish viscount, for when you want a shorter read.</p>
+      </div>
+{chr(10).join(card(b) for b in others)}
+    </div>
+  </section>"""
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Emma Velott">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/covers/{dukes[0]['slug']}.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{head_assets('../')}
+<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{site_header('../')}
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span>Clean Duke Romance Books</nav>
+  </div>
+  <section class="section" style="padding-top:36px" aria-labelledby="duke-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">Regency romance by Emma Velott</span>
+        <h1 id="duke-title" style="font-size:clamp(36px,4.6vw,52px)">Clean Duke Romance Books</h1>
+        <p>Grumpy dukes, scarred dukes and the women who refuse to be frightened of them. Every one is a clean, closed-door Regency romance with a happily-ever-after, so you get all the longing and none of the explicit scenes.</p>
+      </div>
+{chr(10).join(card(b) for b in dukes)}
+    </div>
+  </section>
+{also}
+  <section class="section" aria-labelledby="what-title">
+    <div class="wrap narrow">
+      <h2 id="what-title" style="font-size:32px;margin-bottom:14px">What is a clean duke romance?</h2>
+      <p>A clean duke romance is a love story set among the English aristocracy, usually in the Regency era of the early 1800s, where the hero is a duke and the romance stays behind closed doors. The tension comes from glances, arguments, arrangements and slow-growing trust rather than explicit scenes. Expect grand country houses, marriages of convenience, wounded or guarded dukes and heroines with more spirit than their circumstances allow.</p>
+      <p>If you enjoy Bridgerton-style settings but prefer your romance sweet and swoony, these books are written for you.</p>
+      <p style="margin-top:22px"><a class="btn btn-primary" href="../#how">How buying direct works</a></p>
+    </div>
+  </section>
+</main>
+{site_footer('../')}
+</body>
+</html>
+"""
+
+
 def build_404():
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -375,9 +475,10 @@ def main():
     write(os.path.join(OUT, "index.html"), build_home())
     for b in BOOKS:
         write(os.path.join(OUT, b["slug"], "index.html"), build_book(b))
+    write(os.path.join(OUT, DUKE_SLUG, "index.html"), build_duke_page())
     write(os.path.join(OUT, "404.html"), build_404())
     shutil.copy("styles.css", OUT)
-    urls = [SITE + "/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS]
+    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"
