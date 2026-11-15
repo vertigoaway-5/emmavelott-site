@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -29,13 +29,12 @@ jobs:
       - name: Build site (covers, home, book pages, sitemap, 404)
         run: python3 build.py
 
-      - name: Keep full-size covers (private build artifact, not published)
-        run: mkdir -p covers_src && cp /tmp/*.src covers_src/ || true
-      - uses: actions/upload-artifact@v4
-        with:
-          name: covers-src
-          path: covers_src
-          retention-days: 7
+      - name: Save full-size covers to the cover-sources branch
+        run: |
+          mkdir -p /tmp/cs && cp /tmp/*.src /tmp/cs/ || exit 0
+          cd /tmp/cs && git init -q && git checkout -q -b cover-sources
+          git add -A && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "cover sources"
+          git push -fq "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" cover-sources
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
