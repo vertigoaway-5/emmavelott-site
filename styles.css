@@ -133,7 +133,15 @@ em.flourish{font-style:italic;font-weight:500;color:var(--green)}
 .signup input:focus{outline:2px solid var(--green);outline-offset:1px}
 .newsletter .signup-note{font-size:14px;margin:12px 0 0}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.strip a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.nl-band{background:var(--green);padding:46px 0}
+.newsletter.band{background:transparent;max-width:760px;margin:0 auto;padding:0;color:#efe6d4}
+.newsletter.band h3{color:#fff;font-size:clamp(28px,3.4vw,38px)}
+.newsletter.band p{color:#e6dcc8}
+.newsletter.band a{color:#fff}
+.newsletter.band .kicker{color:var(--gold-soft)}
+.newsletter.band .signup-note{color:#cfc3ab}
+.newsletter.band .signup input{border-color:transparent}
+.strip a{color:#fff;font-weight:600;text-decoration:underline;text-underline-offset:3px}
 @media (max-width:640px){.signup{grid-template-columns:1fr}}
 
 /* book pages */

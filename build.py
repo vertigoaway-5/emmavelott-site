@@ -70,22 +70,22 @@ def signup_form(uid):
           <input id="fn-{uid}" name="fields[first_name]" type="text" autocomplete="given-name" placeholder="First name">
           <label class="sr" for="em-{uid}">Email address</label>
           <input id="em-{uid}" name="email_address" type="email" autocomplete="email" placeholder="Email address" required>
-          <button class="btn btn-primary" type="submit">Send me the epilogue</button>
+          <button class="btn btn-primary" type="submit">Get my free epilogue</button>
         </form>
         <p class="signup-note">Free. No spam, and you can unsubscribe with one click.</p>"""
 
 
-def signup_box(uid, home, heading="A free Christmas epilogue for Emma's readers"):
-    return f"""<div class="newsletter is-live" id="newsletter{'' if uid == 'home' else '-' + uid}">
-        <span class="kicker">Exclusive to the reader list</span>
+def signup_box(uid, home, heading="Get free bonus epilogues and reader gifts", extra_class=""):
+    return f"""<div class="newsletter is-live {extra_class}" id="newsletter{'' if uid == 'home' else '-' + uid}">
+        <span class="kicker">Free for Emma's readers</span>
         <h3>{heading}</h3>
-        <p>Join Emma's readers for new releases, sales and a bonus Christmas epilogue for <a href="{home}a-jilted-bride-for-the-battle-scarred-duke/"><em>A Jilted Bride for the Battle-Scarred Duke</em></a>, arriving in your inbox in December.</p>
+        <p>Join the reader list for bonus epilogues, free reader gifts, new releases and sales. First up, a Christmas epilogue for <a href="{home}a-jilted-bride-for-the-battle-scarred-duke/"><em>A Jilted Bride for the Battle-Scarred Duke</em></a>, arriving in your inbox in December.</p>
         {signup_form(uid)}
       </div>"""
 
 
 def site_header(home):
-    return f"""<div class="strip"><a href="{home or './'}#newsletter">Free Christmas epilogue for readers on Emma's list</a><span>&#183;</span>Ebooks delivered in moments<span>&#183;</span>Read on any device</div>
+    return f"""<div class="strip"><a href="{home or './'}#newsletter">Get free bonus epilogues and reader gifts</a><span>&#183;</span>Ebooks delivered in moments<span>&#183;</span>Read on any device</div>
 <header class="masthead">
   <div class="wrap">
     <p class="tag">Clean Regency Romance</p>
@@ -217,7 +217,7 @@ def build_home():
         "<!-- HERO_COVERS -->": covers,
         "<!-- BOOK_CARDS -->": cards,
         "<!-- REVIEWS -->": reviews,
-        "<!-- NEWSLETTER -->": signup_box("home", ""),
+        "<!-- NEWSLETTER -->": signup_box("home", "", extra_class="band"),
     }.items():
         assert marker in s, marker
         s = s.replace(marker, value)
