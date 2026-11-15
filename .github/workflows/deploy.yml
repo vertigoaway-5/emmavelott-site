@@ -29,6 +29,14 @@ jobs:
       - name: Build site (covers, home, book pages, sitemap, 404)
         run: python3 build.py
 
+      - name: Keep full-size covers (private build artifact, not published)
+        run: mkdir -p covers_src && cp /tmp/*.src covers_src/ || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: covers-src
+          path: covers_src
+          retention-days: 7
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
