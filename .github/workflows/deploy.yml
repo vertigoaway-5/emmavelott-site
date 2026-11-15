@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -28,13 +28,6 @@ jobs:
 
       - name: Build site (covers, home, book pages, sitemap, 404)
         run: python3 build.py
-
-      - name: Save full-size covers to the cover-sources branch
-        run: |
-          mkdir -p /tmp/cs && cp /tmp/*.src /tmp/cs/ || exit 0
-          cd /tmp/cs && git init -q && git checkout -q -b cover-sources
-          git add -A && git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "cover sources"
-          git push -fq "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" cover-sources
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
