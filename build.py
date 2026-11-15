@@ -59,8 +59,33 @@ def head_assets(prefix):
 <link rel="stylesheet" href="{prefix}styles.css">"""
 
 
+KIT_FORM_ID = "10194085"
+KIT_ACTION = f"https://app.kit.com/forms/{KIT_FORM_ID}/subscriptions"
+
+
+def signup_form(uid):
+    """Plain HTML Kit form. Kit redirects to /thanks/ after submit, /welcome/ after confirming."""
+    return f"""<form class="signup" action="{KIT_ACTION}" method="post">
+          <label class="sr" for="fn-{uid}">First name</label>
+          <input id="fn-{uid}" name="fields[first_name]" type="text" autocomplete="given-name" placeholder="First name">
+          <label class="sr" for="em-{uid}">Email address</label>
+          <input id="em-{uid}" name="email_address" type="email" autocomplete="email" placeholder="Email address" required>
+          <button class="btn btn-primary" type="submit">Send me the epilogue</button>
+        </form>
+        <p class="signup-note">Free. No spam, and you can unsubscribe with one click.</p>"""
+
+
+def signup_box(uid, home, heading="A free Christmas epilogue for Emma's readers"):
+    return f"""<div class="newsletter is-live" id="newsletter{'' if uid == 'home' else '-' + uid}">
+        <span class="kicker">Exclusive to the reader list</span>
+        <h3>{heading}</h3>
+        <p>Join Emma's readers for new releases, sales and a bonus Christmas epilogue for <a href="{home}a-jilted-bride-for-the-battle-scarred-duke/"><em>A Jilted Bride for the Battle-Scarred Duke</em></a>, arriving in your inbox in December.</p>
+        {signup_form(uid)}
+      </div>"""
+
+
 def site_header(home):
-    return f"""<div class="strip">Ebooks delivered to your inbox in moments<span>&#183;</span>EPUB &amp; PDF<span>&#183;</span>Read on any device</div>
+    return f"""<div class="strip"><a href="{home or './'}#newsletter">Free Christmas epilogue for readers on Emma's list</a><span>&#183;</span>Ebooks delivered in moments<span>&#183;</span>Read on any device</div>
 <header class="masthead">
   <div class="wrap">
     <p class="tag">Clean Regency Romance</p>
@@ -192,6 +217,7 @@ def build_home():
         "<!-- HERO_COVERS -->": covers,
         "<!-- BOOK_CARDS -->": cards,
         "<!-- REVIEWS -->": reviews,
+        "<!-- NEWSLETTER -->": signup_box("home", ""),
     }.items():
         assert marker in s, marker
         s = s.replace(marker, value)
@@ -325,6 +351,11 @@ def build_book(b):
     </div>
   </article>
 {review_block}
+  <section class="section" style="padding-top:8px">
+    <div class="wrap narrow">
+      {signup_box(b["slug"][:12], "../")}
+    </div>
+  </section>
   <section class="section tinted" aria-labelledby="more-title">
     <div class="wrap">
       <div class="section-head"><h2 id="more-title">More clean Regency romance from Emma Velott</h2></div>
@@ -432,6 +463,11 @@ def build_duke_page():
       <p style="margin-top:22px"><a class="btn btn-primary" href="../#how">How buying direct works</a></p>
     </div>
   </section>
+  <section class="section" style="padding-top:0">
+    <div class="wrap narrow">
+      {signup_box("duke", "../")}
+    </div>
+  </section>
 </main>
 {site_footer('../')}
 </body>
@@ -440,8 +476,6 @@ def build_duke_page():
 
 
 XMAS_SLUG = "clean-christmas-regency-romance"
-# Set this to the BookFunnel signup link once the newsletter freebie is live.
-NEWSLETTER_URL = ""
 
 UPCOMING_XMAS = [
     {
@@ -482,12 +516,6 @@ def build_xmas_page():
         {items}
       </article>""")
 
-    if NEWSLETTER_URL:
-        cta = f'<a class="btn btn-primary" href="{NEWSLETTER_URL}">Get release news by email</a>'
-        cta_note = "Join Emma's readers to hear the moment the Christmas books are out."
-    else:
-        cta = '<a class="btn btn-primary" href="https://www.instagram.com/emmavelott/" target="_blank" rel="noopener">Follow for release news</a>'
-        cta_note = "Follow Emma on Instagram to hear the moment the Christmas books are out."
 
     ld = {
         "@context": "https://schema.org",
@@ -542,9 +570,8 @@ def build_xmas_page():
       <div class="xgrid">
 {chr(10).join(upcoming)}
       </div>
-      <div style="text-align:center;margin-top:34px">
-        <p style="color:var(--ink-soft);margin:0 0 16px">{cta_note}</p>
-        {cta}
+      <div style="margin-top:40px">
+      {signup_box("xmas", "../", "Hear first when the Christmas books are out")}
       </div>
     </div>
   </section>
@@ -600,6 +627,31 @@ def build_404():
 """
 
 
+def build_simple(title, h1, body):
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} | Emma Velott</title>
+<meta name="robots" content="noindex">
+{head_assets('../')}
+</head>
+<body>
+{site_header('../')}
+<main id="main" class="section" style="text-align:center">
+  <div class="wrap narrow">
+    <h1 style="font-size:clamp(34px,4.4vw,46px);margin-bottom:14px">{h1}</h1>
+{body}
+    <p style="margin-top:28px"><a class="btn btn-primary" href="../#books">Browse the books</a></p>
+  </div>
+</main>
+{site_footer('../')}
+</body>
+</html>
+"""
+
+
 def fetch_covers():
     os.makedirs(os.path.join(OUT, "covers"), exist_ok=True)
     for b in BOOKS:
@@ -638,6 +690,14 @@ def main():
     write(os.path.join(OUT, DUKE_SLUG, "index.html"), build_duke_page())
     write(os.path.join(OUT, XMAS_SLUG, "index.html"), build_xmas_page())
     write(os.path.join(OUT, "404.html"), build_404())
+    write(os.path.join(OUT, "thanks", "index.html"), build_simple(
+        "Check your inbox", "One last step",
+        "    <p>Emma has just sent you a short email. Tap the button inside it to confirm, and you're on the list.</p>\n"
+        "    <p>Can't see it? Have a look in your Promotions or Spam folder.</p>"))
+    write(os.path.join(OUT, "welcome", "index.html"), build_simple(
+        "Welcome", "You're on the list",
+        "    <p>Thank you for joining Emma's readers. Your Christmas epilogue for <em>A Jilted Bride for the Battle-Scarred Duke</em> will arrive in your inbox in December.</p>\n"
+        "    <p>Until then, there are dukes waiting.</p>"))
     shutil.copy("styles.css", OUT)
     shutil.copy("favicon.svg", OUT)
     make_icons()

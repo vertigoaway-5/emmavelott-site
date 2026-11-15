@@ -124,8 +124,17 @@ em.flourish{font-style:italic;font-weight:500;color:var(--green)}
 .connect{text-align:center}
 .connect p{color:var(--ink-soft);margin:0 0 26px}
 .connect-ctas{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
-.newsletter{display:none;margin:0 auto 32px;max-width:560px;background:var(--card);border-radius:8px;padding:30px}
+.newsletter{display:none;margin:0 auto 32px;max-width:620px;background:var(--card);border-radius:8px;padding:34px 34px 26px;text-align:center}
 .newsletter.is-live{display:block}
+.newsletter h3{font-size:clamp(26px,3vw,32px);margin:4px 0 8px}
+.newsletter p{color:var(--ink-soft);margin:0 0 18px}
+.signup{display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px}
+.signup input{font:inherit;font-size:16px;padding:11px 14px;min-height:48px;border:1px solid #cdbfa6;border-radius:6px;background:#fffdf8;color:var(--ink);width:100%;box-sizing:border-box}
+.signup input:focus{outline:2px solid var(--green);outline-offset:1px}
+.newsletter .signup-note{font-size:14px;margin:12px 0 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.strip a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:640px){.signup{grid-template-columns:1fr}}
 
 /* book pages */
 .crumbs{font-size:14px;color:var(--ink-soft);padding:20px 0 0}
