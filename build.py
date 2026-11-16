@@ -657,7 +657,11 @@ def fetch_covers():
     for b in BOOKS:
         src = f"/tmp/{b['slug']}.src"
         dst = os.path.join(OUT, "covers", b["slug"] + ".jpg")
-        subprocess.run(["curl", "-fsSL", "https://public-files.gumroad.com/" + b["gumroad_cover_id"], "-o", src], check=True)
+        local = os.path.join("covers", b["slug"] + ".jpg")
+        if os.path.exists(local):
+            src = local  # a cover kept in the repo takes priority over the Gumroad copy
+        else:
+            subprocess.run(["curl", "-fsSL", "https://public-files.gumroad.com/" + b["gumroad_cover_id"], "-o", src], check=True)
         subprocess.run(["convert", src, "-resize", "500x800^", "-gravity", "center", "-extent", "500x800",
                         "-strip", "-interlace", "Plane", "-sampling-factor", "4:2:0", "-quality", "80", dst], check=True)
 
