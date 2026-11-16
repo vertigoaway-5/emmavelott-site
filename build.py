@@ -79,7 +79,7 @@ def signup_box(uid, home, heading="Get free bonus epilogues and reader gifts", e
     return f"""<div class="newsletter is-live {extra_class}" id="newsletter{'' if uid == 'home' else '-' + uid}">
         <span class="kicker">Free for Emma's readers</span>
         <h3>{heading}</h3>
-        <p>Join the reader list for bonus epilogues, free reader gifts, new releases and sales. First up, a Christmas epilogue for <a href="{home}a-jilted-bride-for-the-battle-scarred-duke/"><em>A Jilted Bride for the Battle-Scarred Duke</em></a>, arriving in your inbox in December.</p>
+        <p>Join the reader list for bonus epilogues, free reader gifts, new releases and sales. Already read <a href="{home}a-jilted-bride-for-the-battle-scarred-duke/"><em>A Jilted Bride for the Battle-Scarred Duke</em></a>? Your free Christmas epilogue, <em>Twelfth Night at Penwythe</em>, is waiting the moment you confirm.</p>
         {signup_form(uid)}
       </div>"""
 
@@ -696,8 +696,11 @@ def main():
         "    <p>Can't see it? Have a look in your Promotions or Spam folder.</p>"))
     write(os.path.join(OUT, "welcome", "index.html"), build_simple(
         "Welcome", "You're on the list",
-        "    <p>Thank you for joining Emma's readers. Your Christmas epilogue for <em>A Jilted Bride for the Battle-Scarred Duke</em> will arrive in your inbox in December.</p>\n"
-        "    <p>Until then, there are dukes waiting.</p>"))
+        "    <p>Thank you for joining Emma's readers.</p>\n"
+        "    <p>If you've read <em>A Jilted Bride for the Battle-Scarred Duke</em>, here is your Christmas gift, one more snowbound night at Penwythe with Ronan and Ariana.</p>\n"
+        "    <p><a class=\"btn btn-primary\" href=\"https://dl.bookfunnel.com/hrc14ff4jz\">Download your free epilogue</a></p>\n"
+        "    <p style=\"margin-top:28px\">Haven't met them yet? The epilogue takes place after the book ends, so start with the story first.</p>\n"
+        "    <p><a class=\"btn\" href=\"../a-jilted-bride-for-the-battle-scarred-duke/\">Get A Jilted Bride for the Battle-Scarred Duke</a></p>"))
     shutil.copy("styles.css", OUT)
     shutil.copy("favicon.svg", OUT)
     make_icons()
