@@ -28,6 +28,8 @@ PRIORITY = 'fetchpriority="high" '
 FONTS = "https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Open+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
 
 BOOKS = json.load(open("books.json", encoding="utf-8"))
+# First-chapter samples: {slug: {"heading": "...", "paras": ["...", ...]}}
+SAMPLES = json.load(open("samples.json", encoding="utf-8")) if os.path.exists("samples.json") else {}
 REVIEWS = json.load(open("reviews.json", encoding="utf-8"))
 SLUGS = {b["slug"] for b in BOOKS}
 for r in REVIEWS:
@@ -53,6 +55,13 @@ FACEBOOK = "https://www.facebook.com/profile.php?id=61596411127455"
 PINTEREST = "https://www.pinterest.com/emmavelott/"
 BUNDLE = "https://emaanspark835.gumroad.com/l/emma-velott-collection"
 
+GOOGLE_TAG_ID = "GTM-MC72GXTC"  # Google tag for GA4 property emmavelott.com (measurement ID G-BKEVHFKZTW)
+GOOGLE_TAG = f"""<script async src="https://www.googletagmanager.com/gtag/js?id={GOOGLE_TAG_ID}"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}
+gtag('js',new Date());
+</script>"""
+
 # Meta Pixel: PageView on every page, Lead on newsletter signup, InitiateCheckout on any Gumroad buy link.
 PIXEL = f"""<script>
 !function(f,b,e,v,n,t,s){{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?
@@ -77,6 +86,7 @@ def head_assets(prefix):
 <link rel="stylesheet" href="{FONTS}">
 <link rel="stylesheet" href="{prefix}styles.css">
 <meta name="p:domain_verify" content="dcd450609e6fd7a415d088125b18bd74">
+{GOOGLE_TAG}
 {PIXEL}"""
 
 
@@ -155,6 +165,62 @@ def buy_row(b, extra=""):
             <a class="btn btn-primary" href="{b['buy']}">Buy the ebook</a>
             <span class="format">EPUB &amp; PDF</span>{kobo}{extra}
           </div>"""
+
+
+def sample_link(b, prefix=""):
+    if b["slug"] not in SAMPLES:
+        return ""
+    return f'<p class="sample-link"><a href="{prefix}sample/">Read the first chapter free</a></p>'
+
+
+def build_sample(b):
+    s = SAMPLES[b["slug"]]
+    url = f"{SITE}/{b['slug']}/sample/"
+    title = f"Read the first chapter of {b['title']} free | Emma Velott"
+    desc = f"Read the opening of {b['title']}, {b['subtitle'].lower()} by Emma Velott, free online."
+    paras = "\n".join(f"      <p>{esc(p)}</p>" for p in s["paras"])
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Emma Velott">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/covers/{b['slug']}.jpg">
+{head_assets('../../')}
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{site_header('../../')}
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../../">Home</a><span>&#8250;</span><a href="../">{esc(b['title'])}</a><span>&#8250;</span>Free sample</nav>
+  </div>
+  <article class="section sample">
+    <div class="wrap narrow">
+      <span class="kicker">Free sample</span>
+      <h1>{esc(b['title'])}</h1>
+      <p class="subtitle">{esc(b['subtitle'])} by Emma Velott</p>
+      <h2 class="sample-heading">{esc(s['heading'])}</h2>
+{paras}
+      <div class="sample-end">
+        <p class="hook">Want to know what happens next?</p>
+        {buy_row(b)}
+        <p class="small">Or get all three books together for $8.99 in <a href="{BUNDLE}">the Emma Velott Collection</a>.</p>
+      </div>
+    </div>
+  </article>
+</main>
+{site_footer('../../')}
+</body>
+</html>
+"""
 
 
 def review_cards(reviews, show_book):
@@ -349,6 +415,7 @@ def build_book(b):
         <p class="subtitle">{esc(b['subtitle'])} by Emma Velott</p>
         <p class="tropes">{tropes_html(b['tropes'])}</p>
         {buy_row(b)}
+        {sample_link(b)}
         <p class="small">Secure checkout through Gumroad. Your download link is emailed to you straight away.</p>
         <p class="hook">{esc(b['hook'])}</p>
         <div class="bp-blurb">
@@ -714,6 +781,8 @@ def main():
     write(os.path.join(OUT, "index.html"), build_home())
     for b in BOOKS:
         write(os.path.join(OUT, b["slug"], "index.html"), build_book(b))
+        if b["slug"] in SAMPLES:
+            write(os.path.join(OUT, b["slug"], "sample", "index.html"), build_sample(b))
     write(os.path.join(OUT, DUKE_SLUG, "index.html"), build_duke_page())
     write(os.path.join(OUT, XMAS_SLUG, "index.html"), build_xmas_page())
     write(os.path.join(OUT, "404.html"), build_404())
@@ -731,7 +800,7 @@ def main():
     shutil.copy("styles.css", OUT)
     shutil.copy("favicon.svg", OUT)
     make_icons()
-    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS]
+    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"
