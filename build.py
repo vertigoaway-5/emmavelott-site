@@ -48,6 +48,25 @@ def page_title(b):
 
 # ---------- shared pieces ----------
 
+META_PIXEL_ID = "1181112837681717"
+FACEBOOK = "https://www.facebook.com/profile.php?id=61596411127455"
+PINTEREST = "https://www.pinterest.com/emmavelott/"
+BUNDLE = "https://emaanspark835.gumroad.com/l/emma-velott-collection"
+
+# Meta Pixel: PageView on every page, Lead on newsletter signup, InitiateCheckout on any Gumroad buy link.
+PIXEL = f"""<script>
+!function(f,b,e,v,n,t,s){{if(f.fbq)return;n=f.fbq=function(){{n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)}};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','{META_PIXEL_ID}');fbq('track','PageView');
+document.addEventListener('click',function(e){{var a=e.target.closest&&e.target.closest('a[href*="gumroad.com/l/"]');if(a)fbq('track','InitiateCheckout',{{content_name:a.href.split('/l/')[1]}});}});
+document.addEventListener('submit',function(e){{if(e.target.classList&&e.target.classList.contains('signup'))fbq('track','Lead');}});
+</script>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id={META_PIXEL_ID}&ev=PageView&noscript=1"></noscript>"""
+
+
 def head_assets(prefix):
     return f"""<link rel="icon" href="{prefix}favicon.svg" type="image/svg+xml">
 <link rel="icon" href="{prefix}favicon.ico" sizes="32x32">
@@ -56,7 +75,9 @@ def head_assets(prefix):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{FONTS}">
-<link rel="stylesheet" href="{prefix}styles.css">"""
+<link rel="stylesheet" href="{prefix}styles.css">
+<meta name="p:domain_verify" content="dcd450609e6fd7a415d088125b18bd74">
+{PIXEL}"""
 
 
 KIT_FORM_ID = "10194085"
@@ -112,6 +133,8 @@ def site_footer(home):
       <li><a href="{home}clean-christmas-regency-romance/">Christmas Romances</a></li>
       <li><a href="{home}#how">How It Works</a></li>
       <li><a href="https://www.instagram.com/emmavelott/" target="_blank" rel="noopener">Instagram</a></li>
+      <li><a href="{FACEBOOK}" target="_blank" rel="noopener">Facebook</a></li>
+      <li><a href="{PINTEREST}" target="_blank" rel="noopener">Pinterest</a></li>
       <li><a href="https://emaanspark835.gumroad.com/" target="_blank" rel="noopener">Shop</a></li>
     </ul>
     <small>&#169; {datetime.date.today().year} Emma Velott. Payments are handled securely by Gumroad, and your ebook is emailed to you right after purchase.</small>
@@ -196,7 +219,7 @@ def build_home():
             {"@type": "WebSite", "@id": SITE + "/#site", "name": "Emma Velott", "url": SITE + "/"},
             {"@type": "Person", "@id": SITE + "/#emma", "name": "Emma Velott", "url": SITE + "/",
              "jobTitle": "Author", "knowsAbout": ["Regency romance", "Clean romance", "Historical romance"],
-             "sameAs": ["https://www.instagram.com/emmavelott/"]},
+             "sameAs": ["https://www.instagram.com/emmavelott/", FACEBOOK, PINTEREST]},
             {"@type": "ItemList", "name": "Books by Emma Velott", "itemListElement": [
                 {"@type": "ListItem", "position": i + 1, "url": f"{SITE}/{b['slug']}/", "name": b["title"]}
                 for i, b in enumerate(BOOKS)]},
