@@ -31,6 +31,9 @@ BOOKS = json.load(open("books.json", encoding="utf-8"))
 # First-chapter samples: {slug: {"heading": "...", "paras": ["...", ...]}}
 SAMPLES = json.load(open("samples.json", encoding="utf-8")) if os.path.exists("samples.json") else {}
 REVIEWS = json.load(open("reviews.json", encoding="utf-8"))
+# Reading guides (trope/search landing pages): one entry per page, see build_guide()
+GUIDES = json.load(open("guides.json", encoding="utf-8")) if os.path.exists("guides.json") else []
+GUIDES_SLUG = "reading-guides"
 SLUGS = {b["slug"] for b in BOOKS}
 for r in REVIEWS:
     assert r.get("book") in SLUGS, f"review for unknown book: {r.get('book')}"
@@ -141,6 +144,7 @@ def site_footer(home):
       <li><a href="{home}#books">The Books</a></li>
       <li><a href="{home}clean-duke-romance-books/">Clean Duke Romances</a></li>
       <li><a href="{home}clean-christmas-regency-romance/">Christmas Romances</a></li>
+      <li><a href="{home}reading-guides/">Reading Guides</a></li>
       <li><a href="{home}#how">How It Works</a></li>
       <li><a href="https://www.instagram.com/emmavelott/" target="_blank" rel="noopener">Instagram</a></li>
       <li><a href="{FACEBOOK}" target="_blank" rel="noopener">Facebook</a></li>
@@ -441,6 +445,7 @@ def build_book(b):
     </div>
   </article>
 {review_block}
+{guide_links_for(b)}
   <section class="section" style="padding-top:8px">
     <div class="wrap narrow">
       {signup_box(b["slug"][:12], "../")}
@@ -692,6 +697,204 @@ def build_xmas_page():
 """
 
 
+# ---------- reading guides ----------
+
+def guide_links_for(b):
+    """Small 'If you like...' block on a book page, linking the guides that feature it."""
+    gs = [g for g in GUIDES if any(x["slug"] == b["slug"] for x in g["books"])]
+    if not gs:
+        return ""
+    links = "".join(f'<li><a href="../{g["slug"]}/">{esc(g["h1"])}</a></li>' for g in gs)
+    return f"""  <section class="section" style="padding-top:8px;padding-bottom:8px">
+    <div class="wrap narrow">
+      <h2 style="font-size:26px;margin-bottom:8px">Find more books like this</h2>
+      <ul class="glist">{links}</ul>
+    </div>
+  </section>"""
+
+
+GUIDE_CSS = """<style>
+.gbody h2{font-size:30px;margin:38px 0 12px}
+.gbody p{font-size:18px}
+.glead{font-size:20px!important;color:var(--ink-soft)}
+.glist{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:10px 22px}
+.glist a{color:var(--claret)}
+.ghub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.ghub article{background:var(--card);border-radius:8px;padding:26px 28px}
+.ghub h2{font-size:26px;margin:0 0 8px}
+.ghub h2 a{text-decoration:none;color:inherit}
+@media (max-width:760px){.ghub{grid-template-columns:1fr}}
+</style>"""
+
+
+def build_guide(g):
+    url = f"{SITE}/{g['slug']}/"
+    by_slug = {b["slug"]: b for b in BOOKS}
+    picks = [(by_slug[x["slug"]], x["why"]) for x in g["books"]]
+
+    def card(b, why):
+        return f"""      <article class="book">
+        <div class="frame"><a href="../{b['slug']}/"><img src="../covers/{b['slug']}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(b)}"></a></div>
+        <div>
+          <span class="kicker">{esc(b['kicker'])}</span>
+          <h3><a href="../{b['slug']}/">{esc(b['title'])}</a></h3>
+          <p class="subtitle">{esc(b['subtitle'])}</p>
+          <p class="tropes">{tropes_html(b['tropes'])}</p>
+          <p class="blurb">{esc(why)}</p>
+          {buy_row(b, chr(10) + '            <a class="more-link" href="../' + b['slug'] + '/">Read more about this book</a>')}
+          {sample_link(b, '../' + b['slug'] + '/')}
+        </div>
+      </article>"""
+
+    sections = []
+    for s in g["sections"]:
+        paras = "\n".join(f"      <p>{esc(p)}</p>" for p in s["paras"])
+        sections.append(f"      <h2>{esc(s['h2'])}</h2>\n{paras}")
+    faq = "\n".join(f"""        <details><summary>{esc(f['q'])}</summary><p>{esc(f['a'])}</p></details>""" for f in g["faq"])
+    others = [o for o in GUIDES if o["slug"] != g["slug"]]
+    other_links = "".join(f'<li><a href="../{o["slug"]}/">{esc(o["h1"])}</a></li>' for o in others)
+    other_links += f'<li><a href="../{DUKE_SLUG}/">Clean Duke Romance Books</a></li><li><a href="../{XMAS_SLUG}/">Clean Christmas Regency Romance</a></li>'
+
+    ld = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "Article", "headline": g["h1"], "description": g["desc"], "url": url,
+             "author": {"@type": "Person", "name": "Emma Velott", "url": SITE + "/"},
+             "publisher": {"@type": "Person", "name": "Emma Velott"},
+             "dateModified": TODAY, "image": f"{SITE}/covers/{picks[0][0]['slug']}.jpg",
+             "mentions": [{"@type": "Book", "name": b["title"], "url": f"{SITE}/{b['slug']}/",
+                           "author": {"@type": "Person", "name": "Emma Velott"}} for b, _ in picks]},
+            {"@type": "FAQPage", "mainEntity": [
+                {"@type": "Question", "name": f["q"], "acceptedAnswer": {"@type": "Answer", "text": f["a"]}}
+                for f in g["faq"]]},
+            {"@type": "BreadcrumbList", "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + "/"},
+                {"@type": "ListItem", "position": 2, "name": "Reading Guides", "item": f"{SITE}/{GUIDES_SLUG}/"},
+                {"@type": "ListItem", "position": 3, "name": g["h1"], "item": url}]},
+        ],
+    }
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(g['title'])}</title>
+<meta name="description" content="{esc(g['desc'])}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Emma Velott">
+<meta property="og:title" content="{esc(g['title'])}">
+<meta property="og:description" content="{esc(g['desc'])}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/covers/{picks[0][0]['slug']}.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{head_assets('../')}
+{GUIDE_CSS}
+<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{site_header('../')}
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span><a href="../{GUIDES_SLUG}/">Reading Guides</a><span>&#8250;</span>{esc(g['h1'])}</nav>
+  </div>
+  <section class="section" style="padding-top:36px">
+    <div class="wrap narrow gbody">
+      <span class="kicker">{esc(g['kicker'])}</span>
+      <h1 style="font-size:clamp(36px,4.6vw,52px)">{esc(g['h1'])}</h1>
+      <p class="glead">{esc(g['lead'])}</p>
+    </div>
+  </section>
+  <section class="section tinted" aria-labelledby="picks-title">
+    <div class="wrap">
+      <div class="section-head"><h2 id="picks-title">{esc(g['books_heading'])}</h2></div>
+{chr(10).join(card(b, why) for b, why in picks)}
+    </div>
+  </section>
+  <section class="section">
+    <div class="wrap narrow gbody">
+{chr(10).join(sections)}
+      <div class="faq">
+        <h2>Questions readers ask</h2>
+{faq}
+      </div>
+    </div>
+  </section>
+  <section class="section" style="padding-top:0">
+    <div class="wrap narrow">
+      {signup_box(g["slug"][:10], "../")}
+      <h2 style="font-size:26px;margin:40px 0 10px">More reading guides</h2>
+      <ul class="glist">{other_links}</ul>
+    </div>
+  </section>
+</main>
+{site_footer('../')}
+</body>
+</html>
+"""
+
+
+def build_guides_hub():
+    url = f"{SITE}/{GUIDES_SLUG}/"
+    title = "Clean Regency Romance Reading Guides | Emma Velott"
+    desc = "Reading guides to clean Regency romance by trope. Books like Bridgerton, marriage of convenience, scarred heroes, grumpy dukes and sweet historical romance."
+    cards = "\n".join(f"""      <article>
+        <h2><a href="../{g['slug']}/">{esc(g['h1'])}</a></h2>
+        <p>{esc(g['desc'])}</p>
+        <a class="more-link" href="../{g['slug']}/">Read the guide</a>
+      </article>""" for g in GUIDES)
+    ld = {"@context": "https://schema.org", "@graph": [
+        {"@type": "CollectionPage", "name": "Reading Guides", "url": url, "description": desc,
+         "mainEntity": {"@type": "ItemList", "itemListElement": [
+             {"@type": "ListItem", "position": i + 1, "url": f"{SITE}/{g['slug']}/", "name": g["h1"]} for i, g in enumerate(GUIDES)]}},
+        {"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + "/"},
+            {"@type": "ListItem", "position": 2, "name": "Reading Guides", "item": url}]}]}
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Emma Velott">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/covers/{BOOKS[0]['slug']}.jpg">
+{head_assets('../')}
+{GUIDE_CSS}
+<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{site_header('../')}
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span>Reading Guides</nav>
+  </div>
+  <section class="section" style="padding-top:36px">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">Find your next Regency romance</span>
+        <h1 style="font-size:clamp(36px,4.6vw,52px)">Reading Guides</h1>
+        <p>Short guides to the clean Regency romance tropes readers love most, with the books to start with.</p>
+      </div>
+      <div class="ghub">
+{cards}
+      </div>
+    </div>
+  </section>
+</main>
+{site_footer('../')}
+</body>
+</html>
+"""
+
+
 def build_404():
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -785,6 +988,10 @@ def main():
             write(os.path.join(OUT, b["slug"], "sample", "index.html"), build_sample(b))
     write(os.path.join(OUT, DUKE_SLUG, "index.html"), build_duke_page())
     write(os.path.join(OUT, XMAS_SLUG, "index.html"), build_xmas_page())
+    for g in GUIDES:
+        write(os.path.join(OUT, g["slug"], "index.html"), build_guide(g))
+    if GUIDES:
+        write(os.path.join(OUT, GUIDES_SLUG, "index.html"), build_guides_hub())
     write(os.path.join(OUT, "404.html"), build_404())
     write(os.path.join(OUT, "thanks", "index.html"), build_simple(
         "Check your inbox", "One last step",
@@ -800,7 +1007,7 @@ def main():
     shutil.copy("styles.css", OUT)
     shutil.copy("favicon.svg", OUT)
     make_icons()
-    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES]
+    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"
