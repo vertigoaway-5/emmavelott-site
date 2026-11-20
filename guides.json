@@ -423,5 +423,254 @@
       }
     ],
     "pin": "06-sweet-clean-closed-door"
+  },
+  {
+    "slug": "books-like-georgette-heyer",
+    "nav": "Books like Georgette Heyer",
+    "icon": "quill",
+    "pin": "08-books-like-georgette-heyer",
+    "title": "Books Like Georgette Heyer | Clean, Witty Regency Romance | Emma Velott",
+    "h1": "Books Like Georgette Heyer",
+    "kicker": "A reading guide for those who have read every Heyer twice",
+    "desc": "Read every Georgette Heyer and want more? Clean, witty Regency romance books like Georgette Heyer, with sparkling banter, managing heroines and dukes who meet their match.",
+    "lead": "You have read Frederica on a rainy weekend and The Grand Sophy on a sunny one. You have quoted Venetia at people who did not deserve it. You know your phaeton from your curricle and you have, at least once, called a perfectly modern gentleman a care-for-nobody to his face. And now, alas, you have come to the end of the shelf. Pray do not despair. The Regency is a large country and there are still a great many houses left to visit.",
+    "gossip": "We are informed that a lady in the shires has read the complete works of Miss Heyer no fewer than four times and has begun, in desperation, to read the cookery books for the dialogue. Her family are concerned. Her neighbours are entertained. She has asked this column whether there is anything else in the world that sparkles quite the same way, and we have taken the liberty of answering below.",
+    "books_heading": "Emma's books for the Heyer devotee",
+    "books": [
+      {
+        "slug": "a-fiery-widow-for-the-cold-duke",
+        "why": "A managing heroine who walks into a duke's household and sets about rearranging it, and him, with a ruthless eye. Heyer readers who loved a capable woman taking charge of a hopeless gentleman will feel at home here."
+      },
+      {
+        "slug": "the-rakish-viscounts-pretend-wife",
+        "why": "Quick, quarrelsome banter between a prim governess and a rake who refuses to take anything seriously. If the comic sparring was your favourite part of Heyer, start here."
+      },
+      {
+        "slug": "a-jilted-bride-for-the-battle-scarred-duke",
+        "why": "A heroine who meets public humiliation with a raised chin and a very sharp tongue, and a duke who has hidden himself away. A little more heartache than Heyer usually allows, with the same refusal to be made small."
+      }
+    ],
+    "quotes": [
+      {
+        "text": "You have had victims. There is a difference, and it is chiefly that the victims left.",
+        "who": "A frank friend, on a duke's former housekeepers",
+        "book": "a-fiery-widow-for-the-cold-duke"
+      },
+      {
+        "text": "You will discover the rules as you break them. It appears to be the only pace at which you learn.",
+        "who": "Delilah Pearce, laying down the law",
+        "book": "the-rakish-viscounts-pretend-wife"
+      }
+    ],
+    "checklist_heading": "You may be a confirmed Heyer reader if",
+    "checklist": [
+      "You can tell a high-perch phaeton from a gig at fifty paces",
+      "You think a hero who says very little and notices everything is the height of romance",
+      "You have strong feelings about the correct way to tie a cravat",
+      "You prefer your love scenes conducted entirely through argument",
+      "You would follow a managing heroine into any household in England"
+    ],
+    "sections": [
+      {
+        "h2": "What makes Georgette Heyer so very hard to replace",
+        "paras": [
+          "Georgette Heyer more or less invented the Regency romance as we know it, and she did it with an almost unfair amount of style. Her novels are clean, very funny and crammed with period detail, from the slang of the day to the exact cut of a coat. Her heroines are clever and frequently ungovernable. Her heroes range from the brusque and taciturn to the languid and devastatingly well dressed, and readers have argued happily for decades over which kind is best.",
+          "Above all, Heyer romances are made of talk. Couples fall in love through quarrels, schemes, misunderstandings and a great deal of wit, and the kissing tends to arrive late and briefly. That is precisely why her books feel so romantic. Every exchange is a duel, and the reader is the only one who can see who is winning."
+        ]
+      },
+      {
+        "h2": "What to look for in a book like Heyer",
+        "paras": [
+          "Look first for the voice. A good Heyer read-alike is witty in the narration as well as in the dialogue, and it trusts the reader to enjoy a long, elegant quarrel. Look next for the heroine, who should be capable, opinionated and quite unwilling to faint. Then look for the setting, which should be the real Regency, with its rules and its absurdities treated as both a stage and a joke.",
+          "Finally, check the heat level. Heyer is clean, and many modern Regency novels are not. Words like clean, sweet or closed-door in the description will keep you safe from unwelcome surprises."
+        ]
+      },
+      {
+        "h2": "Other authors Heyer readers love",
+        "paras": [
+          "Jane Austen is the obvious companion, and many Heyer devotees came to her by way of Pride and Prejudice. For modern clean Regency romance, Julianne Donaldson's Edenbrooke is a much-loved standalone with a lively heroine, and Sarah M. Eden, Martha Keyes and Josi S. Kilpack all write sweet Regency stories with plenty of humour. Emma's own books lean into the same quarrelsome banter, with heroes who have been through rather more than a lost wager."
+        ]
+      }
+    ],
+    "faq": [
+      {
+        "q": "Are Georgette Heyer's books clean?",
+        "a": "Yes. Georgette Heyer's Regency romances are clean, with romance conveyed through wit and dialogue and no explicit scenes."
+      },
+      {
+        "q": "Which Georgette Heyer book should I read first?",
+        "a": "Readers most often recommend Frederica, The Grand Sophy, Venetia or Cotillion as starting points. All are standalone Regency romances."
+      },
+      {
+        "q": "Which Emma Velott book is most like Georgette Heyer?",
+        "a": "The Rakish Viscount's Pretend Wife has the quickest comic banter, and A Fiery Widow for the Cold Duke has the most Heyer-like managing heroine."
+      }
+    ]
+  },
+  {
+    "slug": "books-for-jane-austen-lovers",
+    "nav": "Books for Jane Austen lovers",
+    "icon": "rose",
+    "pin": "09-books-for-jane-austen-lovers",
+    "title": "Books for Jane Austen Lovers | Clean Regency Romance Like Pride and Prejudice",
+    "h1": "Books for Jane Austen Lovers",
+    "kicker": "A reading guide for those who have rewatched the lake scene",
+    "desc": "Clean romance books for Jane Austen lovers, with the wit of Pride and Prejudice and the longing of Persuasion. Regency romance like Jane Austen, and where to start.",
+    "lead": "It is a truth universally acknowledged that a reader in possession of a well-thumbed Pride and Prejudice must be in want of something else to read. You have met Mr. Darcy in every adaptation. You have sighed over Captain Wentworth's letter more times than is strictly healthy. You have even, in a weak moment, given Mansfield Park a second chance. Now you would like something new that still feels like candlelight and good manners and a man who is slower than he ought to be to say what he means.",
+    "gossip": "This column has learned of a book club in a quiet market town that has read Pride and Prejudice six years running and come to blows, very politely, over whether the 1995 or the 2005 Mr. Darcy is superior. A truce has been proposed. Its terms require each member to bring a new Regency romance to the next meeting, and the club secretary has asked us, rather desperately, for suggestions.",
+    "books_heading": "Emma's books for Austen readers",
+    "books": [
+      {
+        "slug": "a-jilted-bride-for-the-battle-scarred-duke",
+        "why": "A heroine who meets humiliation with wit and a duke whose pride and pain keep him at a distance. Austen readers who love a slow change of heart, and a man who must learn to be seen, will find a great deal here."
+      },
+      {
+        "slug": "a-fiery-widow-for-the-cold-duke",
+        "why": "Two people with fixed first impressions of each other, both wrong, slowly put right across a great many breakfasts. A clean romance of manners with a sharp tongue."
+      },
+      {
+        "slug": "the-rakish-viscounts-pretend-wife",
+        "why": "A light, comic novella with a sensible heroine and a gentleman of no sense whatsoever. For readers whose favourite Austen scenes are the funny ones."
+      }
+    ],
+    "quotes": [
+      {
+        "text": "I find I cannot afford a great many things, my lady. Your friendship was never going to be among the ones I missed.",
+        "who": "Ariana Raye, to a disobliging viscountess",
+        "book": "a-jilted-bride-for-the-battle-scarred-duke"
+      },
+      {
+        "text": "I have the look of a man who has not breakfasted, which you persist in confusing with guilt.",
+        "who": "A duke, defending himself",
+        "book": "a-fiery-widow-for-the-cold-duke"
+      }
+    ],
+    "checklist_heading": "You may be an incurable Austen reader if",
+    "checklist": [
+      "You have taken a long walk purely in the hope of something happening",
+      "You judge a man by how he treats his sister",
+      "You have opinions about the correct number of drawing rooms",
+      "You consider a well-written letter more romantic than any kiss",
+      "You have, privately, been half agony and half hope"
+    ],
+    "sections": [
+      {
+        "h2": "Why Austen readers are so hard to please",
+        "paras": [
+          "Jane Austen wrote during the Regency itself, so her novels are not historical romance at all but sharp, funny portraits of her own world. That gives them an ease and an irony no modern writer can quite copy. Her heroines are clever, her villains are charming, and her love stories turn on character, on pride and prejudice and persuasion, rather than on grand gestures. The romance arrives late and quietly and lands like a thunderclap.",
+          "Austen is also, of course, entirely clean. Her couples rarely so much as kiss on the page, and the longing is all the stronger for it."
+        ]
+      },
+      {
+        "h2": "What to look for in a book like Austen",
+        "paras": [
+          "Look for a heroine with a mind of her own and a social position that makes it awkward to use. Look for a hero whose first impression is wrong in some important way. Look for wit in the narration, a world full of rules, and a love story that grows out of conversation and misunderstanding. Regency romance is the natural next step, since it is set in Austen's own period and borrows a good deal of her furniture.",
+          "Many modern Regency romances are steamier than Austen ever was, so if you prefer her restraint, look for the words clean, sweet or closed-door."
+        ]
+      },
+      {
+        "h2": "Other authors Austen lovers adore",
+        "paras": [
+          "Georgette Heyer is the classic next step, with all of Austen's wit and rather more slang. Julianne Donaldson's Edenbrooke is a modern clean favourite that many Austen readers recommend to one another, and Sarah M. Eden and Martha Keyes write sweet Regency romance with the same gentle comedy of manners. Emma's books sit among them, with a little more heartache and heroes who have earned their brooding."
+        ]
+      }
+    ],
+    "faq": [
+      {
+        "q": "What should I read after Pride and Prejudice?",
+        "a": "Many readers move on to Austen's Persuasion and Emma, then to Georgette Heyer and to clean modern Regency romance, which keeps Austen's setting and restraint."
+      },
+      {
+        "q": "Is Regency romance the same as Jane Austen?",
+        "a": "Not quite. Austen wrote about her own time. Regency romance is written later and set in that same period, usually with the romance placed front and centre."
+      },
+      {
+        "q": "Are Emma Velott's books clean like Austen?",
+        "a": "Yes. Emma writes clean, closed-door Regency romance with a happily-ever-after."
+      }
+    ]
+  },
+  {
+    "slug": "clean-authors-like-julia-quinn",
+    "nav": "Clean authors like Julia Quinn",
+    "icon": "teacup",
+    "pin": "10-clean-authors-like-julia-quinn",
+    "title": "Clean Authors Like Julia Quinn | Witty Regency Romance Without the Steam",
+    "h1": "Clean Authors Like Julia Quinn",
+    "kicker": "A reading guide for lovers of large families and larger quarrels",
+    "desc": "Love Julia Quinn's humour, families and banter but want a clean read? Witty, closed-door Regency romance authors like Julia Quinn, and where to start with Emma Velott.",
+    "lead": "Julia Quinn writes the kind of Regency romance that makes you laugh out loud on a train and then pretend you were coughing. The siblings bicker, the mothers scheme, the heroines are quick and the heroes are undone. If there is a complaint to be made, it is only that some readers would prefer to skip certain chapters, and are tired of skipping. This guide is for those readers, offered with every respect to the lady herself.",
+    "gossip": "A gentleman of our acquaintance has confessed, under some duress, that he reads his wife's Regency romances when she is out, and that his favourite parts are the arguments. He was very particular that we should not print his name. We are only too happy to oblige, and to recommend to him, and to his wife, a few books with all of the arguments and none of the blushing.",
+    "books_heading": "Emma's books for Julia Quinn fans",
+    "books": [
+      {
+        "slug": "the-rakish-viscounts-pretend-wife",
+        "why": "The funniest of Emma's books, all quick banter and inventive lying to an innkeeper. If you love a Quinn hero who talks too much and a heroine who talks back, this is the one."
+      },
+      {
+        "slug": "a-fiery-widow-for-the-cold-duke",
+        "why": "A grumpy duke, a heroine with a temper, and household chaos at every turn. Sharp dialogue and a satisfying thaw."
+      },
+      {
+        "slug": "a-jilted-bride-for-the-battle-scarred-duke",
+        "why": "A ballroom scandal, a quick-tongued heroine and a reclusive duke, and a young sister who needs a companion far more than her brother would admit."
+      }
+    ],
+    "quotes": [
+      {
+        "text": "Most people require a fortnight to see why. You are quick, wife.",
+        "who": "Simon Cathcart, cheerfully insulted",
+        "book": "the-rakish-viscounts-pretend-wife"
+      },
+      {
+        "text": "Have I? How efficient of me.",
+        "who": "Ariana Raye, refusing to weep in public",
+        "book": "a-jilted-bride-for-the-battle-scarred-duke"
+      }
+    ],
+    "checklist_heading": "You may be a Julia Quinn reader at heart if",
+    "checklist": [
+      "You want a family tree in the front of every book",
+      "You think a heroine who wins an argument is the most attractive thing in the world",
+      "Your favourite scene in any romance is a disastrous dinner party",
+      "You laugh aloud in public and blame the weather",
+      "You would like all of that with the bedroom door politely shut"
+    ],
+    "sections": [
+      {
+        "h2": "What we love about Julia Quinn",
+        "paras": [
+          "Julia Quinn's Bridgerton books made the Regency feel like a family dinner at which everyone is a little too clever. Her romances are built on comedy, on warm, noisy families, and on dialogue that moves so quickly you hardly notice the plot. Her heroes are often far less in control than they think, and her heroines are delighted to point this out.",
+          "Her books do include open-door love scenes, which plenty of readers enjoy. Plenty of others love everything else about them and would happily trade those chapters for a few more arguments."
+        ]
+      },
+      {
+        "h2": "Finding the same sparkle in a clean book",
+        "paras": [
+          "Look for an author whose blurbs make you smile. Comedy is harder to fake than heat, so a funny description is a good sign. Look for families and friendships around the couple, for a heroine who argues, and for dialogue on every page of the sample. Then check the heat level, and choose books labelled clean, sweet or closed-door.",
+          "Reading a free first chapter is the quickest test of all. If the first page makes you laugh, the rest probably will."
+        ]
+      },
+      {
+        "h2": "Other clean authors Quinn readers enjoy",
+        "paras": [
+          "Georgette Heyer is the grandmother of the witty Regency romance and is entirely clean. Julianne Donaldson's Edenbrooke has the playful heroine and the swoon. Sarah M. Eden, Martha Keyes and Josi S. Kilpack write sweet Regency series full of siblings and friends. Emma's books bring the quarrelling, the scheming relatives and the happily-ever-after, with the door kept shut."
+        ]
+      }
+    ],
+    "faq": [
+      {
+        "q": "Are Julia Quinn's books clean?",
+        "a": "No. Julia Quinn's Regency romances, including the Bridgerton series, include open-door love scenes."
+      },
+      {
+        "q": "Who writes clean books like Julia Quinn?",
+        "a": "Readers often suggest Georgette Heyer, Julianne Donaldson, Sarah M. Eden and Martha Keyes, and Emma Velott writes witty clean Regency romance in the same spirit."
+      },
+      {
+        "q": "Can I read a sample before buying Emma's books?",
+        "a": "Yes. Every book on this site has its first chapter or prologue free to read."
+      }
+    ]
   }
 ]

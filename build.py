@@ -982,7 +982,7 @@ document.getElementById('heroquiz').addEventListener('submit',function(e){
 def build_guides_hub():
     url = f"{SITE}/{GUIDES_SLUG}/"
     title = "Clean Regency Romance Reading Guides | Emma Velott"
-    desc = "Reading guides to clean Regency romance by trope. Books like Bridgerton, marriage of convenience, scarred heroes, grumpy dukes and sweet historical romance."
+    desc = "Witty reading guides to clean Regency romance. Books like Bridgerton, Georgette Heyer and Jane Austen, clean authors like Julia Quinn, plus marriage of convenience, scarred heroes and grumpy dukes."
     cards = "\n".join(f"""      <article>
         {ICONS.get(g.get('icon', 'fan'), '')}
         <h2><a href="../{g['slug']}/">{esc(g['h1'])}</a></h2>
