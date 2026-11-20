@@ -714,17 +714,79 @@ def guide_links_for(b):
 
 
 GUIDE_CSS = """<style>
-.gbody h2{font-size:30px;margin:38px 0 12px}
+.gbody h2{font-size:30px;margin:44px 0 12px}
 .gbody p{font-size:18px}
-.glead{font-size:20px!important;color:var(--ink-soft)}
+.glead{font-size:21px!important;color:var(--ink-soft);font-style:italic;font-family:var(--display)}
 .glist{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:10px 22px}
 .glist a{color:var(--claret)}
+.ghero{display:flex;gap:28px;align-items:center}
+.ghero svg{flex:0 0 130px;width:130px;height:130px}
+@media (max-width:640px){.ghero{flex-direction:column;align-items:flex-start}.ghero svg{width:96px;height:96px;flex-basis:96px}}
+.gossip{margin:40px 0 8px;background:#fbf6ea;border:1px solid #d8bd85;padding:26px 30px 22px;position:relative;box-shadow:4px 4px 0 #efe3c8}
+.gossip .mast{font-family:var(--display);font-size:26px;font-weight:600;text-align:center;letter-spacing:.04em;border-bottom:3px double var(--ink);padding-bottom:6px;margin-bottom:4px}
+.gossip .date{text-align:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:14px}
+.gossip p{font-family:var(--display);font-size:18px;line-height:1.65;margin:0}
+.gossip p::first-letter{font-size:46px;float:left;line-height:.9;padding:4px 8px 0 0;color:var(--claret)}
+.gossip .sig{display:block;text-align:right;font-style:italic;margin-top:10px;color:var(--ink-soft);font-family:var(--display)}
+.pq{margin:56px auto 40px;max-width:640px;text-align:center;padding:40px 28px 28px;border-top:1px solid #d8bd85;border-bottom:1px solid #d8bd85;position:relative}
+.pq::before{content:"\\201C";font-family:var(--display);font-size:64px;line-height:56px;height:44px;overflow:hidden;color:#d8bd85;position:absolute;top:-24px;left:50%;transform:translateX(-50%);background:var(--paper);padding:0 14px}
+.pq blockquote{margin:0;font-family:var(--display);font-style:italic;font-size:24px;line-height:1.45;color:var(--ink)}
+.pq figcaption{margin-top:12px;font-size:15px;color:var(--ink-soft)}
+.pq figcaption a{color:var(--claret)}
+.ticks{background:var(--card);border-radius:10px;padding:24px 28px;margin:40px 0}
+.ticks h2{margin-top:0!important;font-size:26px!important}
+.ticks label{display:flex;gap:12px;align-items:flex-start;padding:7px 0;cursor:pointer;font-size:17px}
+.ticks input{accent-color:var(--claret);width:20px;height:20px;margin-top:4px;flex:0 0 20px}
+.ticks .verdict{margin:12px 0 0;font-family:var(--display);font-style:italic;color:var(--claret);min-height:1.6em}
+.gpin{margin:48px auto;text-align:center}
+.gpin img{width:100%;max-width:340px;height:auto;border-radius:8px;box-shadow:0 10px 30px rgba(60,30,30,.18)}
+.gpin figcaption{margin-top:14px;font-size:15px;color:var(--ink-soft)}
+.gpin .btn{margin-top:10px;background:#bd2c35;color:#fff}
 .ghub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
 .ghub article{background:var(--card);border-radius:8px;padding:26px 28px}
+.ghub article svg{width:64px;height:64px;margin-bottom:8px}
 .ghub h2{font-size:26px;margin:0 0 8px}
 .ghub h2 a{text-decoration:none;color:inherit}
 @media (max-width:760px){.ghub{grid-template-columns:1fr}}
+.quiz{background:var(--card);border-radius:10px;padding:30px 32px;margin:48px 0}
+.quiz fieldset{border:0;padding:0;margin:0 0 22px}
+.quiz legend{font-family:var(--display);font-size:21px;font-weight:600;margin-bottom:8px}
+.quiz label{display:block;padding:5px 0;cursor:pointer}
+.quiz input{accent-color:var(--claret);margin-right:10px}
+.quiz .result{margin-top:18px;padding:22px 24px;border:1px solid #d8bd85;border-radius:8px;background:#fbf6ea;display:none}
+.quiz .result.show{display:block}
+.quiz .result h3{font-size:26px;margin-bottom:6px}
 </style>"""
+
+_G = 'fill="none" stroke="#7a2e33" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"'
+_A = 'fill="none" stroke="#b08c48" stroke-width="1.6" stroke-linecap="round"'
+ICONS = {
+    # original line drawings, claret with antique gold accents
+    "fan": f"""<svg viewBox="0 0 120 120" aria-hidden="true"><g {_G}><path d="M60 98 L14 52 A65 65 0 0 1 106 52 Z"/><path d="M60 98 L26 40"/><path d="M60 98 L42 32"/><path d="M60 98 L60 29"/><path d="M60 98 L78 32"/><path d="M60 98 L94 40"/></g><g {_A}><path d="M22 46 A58 58 0 0 1 98 46"/><circle cx="60" cy="98" r="5"/><path d="M60 103 q-6 10 2 14"/></g></svg>""",
+    "ring": f"""<svg viewBox="0 0 120 120" aria-hidden="true"><g {_G}><circle cx="60" cy="72" r="30"/><circle cx="60" cy="72" r="23"/></g><g {_A}><path d="M48 40 L60 24 L72 40 L60 50 Z"/><path d="M48 40 H72"/><path d="M30 26 l4 4 M90 26 l-4 4 M60 10 v6"/></g></svg>""",
+    "rose": f"""<svg viewBox="0 0 120 120" aria-hidden="true"><g {_G}><path d="M60 30 c-14 0-22 10-22 20 0 12 10 20 22 20 s22-8 22-20c0-10-8-20-22-20z"/><path d="M60 38 c-7 0-11 6-11 12 0 7 5 11 11 11"/><path d="M60 46 c4 0 6 3 6 6"/><path d="M60 70 v40"/></g><g {_A}><path d="M60 92 c-10-6-20-4-24 2 8 4 18 4 24-2z"/><path d="M60 84 c10-6 20-4 24 2-8 4-18 4-24-2z"/><path d="M58 100 l-4-3 M62 104 l4-3"/></g></svg>""",
+    "teacup": f"""<svg viewBox="0 0 120 120" aria-hidden="true"><g {_G}><path d="M24 50 h60 v8 c0 18-12 30-30 30 s-30-12-30-30z"/><path d="M84 56 c12 0 14 18 0 18"/><path d="M14 96 h80"/></g><g {_A}><path d="M44 40 c-4-6 4-10 0-18"/><path d="M58 40 c-4-6 4-10 0-18"/><path d="M38 66 c6 4 26 4 32 0"/></g></svg>""",
+    "quill": f"""<svg viewBox="0 0 120 120" aria-hidden="true"><g {_G}><path d="M30 104 C40 70 62 34 100 14 C92 46 70 78 38 96"/><path d="M30 104 l8-8"/><path d="M14 108 h40"/></g><g {_A}><path d="M48 80 L86 28"/><path d="M58 64 l-10-2 M66 52 l-10-2 M74 40 l-9-2"/><circle cx="88" cy="104" r="8"/><path d="M80 104 h16"/></g></svg>""",
+}
+
+
+def _quote_html(q, prefix="../"):
+    by_slug = {b["slug"]: b for b in BOOKS}
+    b = by_slug[q["book"]]
+    return f"""      <figure class="pq">
+        <blockquote>{esc(q['text'])}</blockquote>
+        <figcaption>{esc(q['who'])}, in <a href="{prefix}{b['slug']}/"><em>{esc(b['title'])}</em></a></figcaption>
+      </figure>"""
+
+
+TICK_JS = """<script>
+document.querySelectorAll('.ticks').forEach(function(box){
+  var out=box.querySelector('.verdict'),cs=box.querySelectorAll('input'),
+  msgs=['Tick away, dear reader. No one is watching. Probably.','A mild inclination. Perfectly respectable.','Two? Your aunt is beginning to wonder about you.','Three. You are, as the matrons say, quite far gone.','Four. There is no hope for you, and we could not be more pleased.','All five. Fetch the smelling salts and the books below.'];
+  function upd(){var n=0;cs.forEach(function(c){if(c.checked)n++});out.textContent=msgs[n];}
+  cs.forEach(function(c){c.addEventListener('change',upd)});upd();
+});
+</script>"""
 
 
 def build_guide(g):
@@ -747,9 +809,40 @@ def build_guide(g):
       </article>"""
 
     sections = []
-    for s in g["sections"]:
-        paras = "\n".join(f"      <p>{esc(p)}</p>" for p in s["paras"])
-        sections.append(f"      <h2>{esc(s['h2'])}</h2>\n{paras}")
+    quotes = list(g.get("quotes", []))
+    for i, sec in enumerate(g["sections"]):
+        paras = "\n".join(f"      <p>{esc(p)}</p>" for p in sec["paras"])
+        sections.append(f"      <h2>{esc(sec['h2'])}</h2>\n{paras}")
+        if i in (0, 2) and quotes:
+            sections.append(_quote_html(quotes.pop(0)))
+        if i == 1 and g.get("checklist"):
+            items = "\n".join(f'        <label><input type="checkbox"> <span>{esc(c)}</span></label>' for c in g["checklist"])
+            sections.append(f"""      <div class="ticks">
+        <h2>{esc(g['checklist_heading'])}</h2>
+        <p class="small" style="margin:0 0 8px;color:var(--ink-soft)">Tick all that apply. We shan't tell.</p>
+{items}
+        <p class="verdict" aria-live="polite"></p>
+      </div>""")
+    for q in quotes:
+        sections.append(_quote_html(q))
+    if g.get("pin"):
+        from urllib.parse import quote as _q
+        img = f"{SITE}/pins/{g['pin']}.jpg"
+        save = ("https://www.pinterest.com/pin/create/button/?url=" + _q(url, safe="") +
+                "&media=" + _q(img, safe="") + "&description=" + _q(g["h1"] + " | Emma Velott", safe=""))
+        sections.append(f"""      <figure class="gpin">
+        <img src="../pins/{g['pin']}.jpg" width="1000" height="1500" loading="lazy" alt="{esc(g['h1'])}, a reading guide by Emma Velott">
+        <figcaption>Pin it for later, so you can find it again when the ton is being tiresome.</figcaption>
+        <a class="btn" href="{save}" target="_blank" rel="noopener">Save to Pinterest</a>
+      </figure>""")
+    gossip = ""
+    if g.get("gossip"):
+        gossip = f"""      <aside class="gossip" aria-label="From the society pages">
+        <div class="mast">The Mayfair Murmur</div>
+        <div class="date">Society intelligence of a most pressing nature</div>
+        <p>{esc(g['gossip'])}</p>
+        <span class="sig">Yours in confidence, A Lady Who Notices</span>
+      </aside>"""
     faq = "\n".join(f"""        <details><summary>{esc(f['q'])}</summary><p>{esc(f['a'])}</p></details>""" for f in g["faq"])
     others = [o for o in GUIDES if o["slug"] != g["slug"]]
     other_links = "".join(f'<li><a href="../{o["slug"]}/">{esc(o["h1"])}</a></li>' for o in others)
@@ -801,9 +894,15 @@ def build_guide(g):
   </div>
   <section class="section" style="padding-top:36px">
     <div class="wrap narrow gbody">
-      <span class="kicker">{esc(g['kicker'])}</span>
-      <h1 style="font-size:clamp(36px,4.6vw,52px)">{esc(g['h1'])}</h1>
-      <p class="glead">{esc(g['lead'])}</p>
+      <div class="ghero">
+        {ICONS.get(g.get("icon", "fan"), "")}
+        <div>
+          <span class="kicker">{esc(g['kicker'])}</span>
+          <h1 style="font-size:clamp(36px,4.6vw,52px)">{esc(g['h1'])}</h1>
+        </div>
+      </div>
+      <p class="glead" style="margin-top:22px">{esc(g['lead'])}</p>
+{gossip}
     </div>
   </section>
   <section class="section tinted" aria-labelledby="picks-title">
@@ -830,9 +929,54 @@ def build_guide(g):
   </section>
 </main>
 {site_footer('../')}
+{TICK_JS}
 </body>
 </html>
 """
+
+
+HERO_QUIZ = """      <section class="quiz" aria-labelledby="quiz-title">
+        <span class="kicker">A highly scientific diversion</span>
+        <h2 id="quiz-title" style="font-size:32px;margin-bottom:6px">Which of Emma's heroes should you marry?</h2>
+        <p style="margin:0 0 22px;color:var(--ink-soft)">Four questions. No chaperone. Your mother need never know.</p>
+        <form id="heroquiz">
+          <fieldset><legend>1. Your ideal evening is spent</legend>
+            <label><input type="radio" name="q1" value="r"> by a fire in a very quiet house, reading aloud to someone who pretends not to listen</label>
+            <label><input type="radio" name="q1" value="w"> winning an argument at the dinner table</label>
+            <label><input type="radio" name="q1" value="s"> snowed in somewhere inconvenient with excellent company</label>
+          </fieldset>
+          <fieldset><legend>2. A gentleman insults you at a ball. You</legend>
+            <label><input type="radio" name="q2" value="r"> throw your champagne, then leave with your head high</label>
+            <label><input type="radio" name="q2" value="w"> explain to him, at length and in front of his mother, exactly what is wrong with him</label>
+            <label><input type="radio" name="q2" value="s"> laugh, because he is clearly drunk and will be mortified by morning</label>
+          </fieldset>
+          <fieldset><legend>3. The quality you find most irresistible</legend>
+            <label><input type="radio" name="q3" value="r"> a man who has been through the wars and still knows how to be gentle</label>
+            <label><input type="radio" name="q3" value="w"> a man who scowls at everyone except you</label>
+            <label><input type="radio" name="q3" value="s"> a man who can make you laugh when you are trying very hard to be cross</label>
+          </fieldset>
+          <fieldset><legend>4. Your wedding, ideally, is</legend>
+            <label><input type="radio" name="q4" value="r"> small, at a house nobody has visited in years</label>
+            <label><input type="radio" name="q4" value="w"> sensible, practical, and secretly the most romantic thing that has ever happened</label>
+            <label><input type="radio" name="q4" value="s"> already announced to an innkeeper before anyone has actually proposed</label>
+          </fieldset>
+          <button class="btn btn-primary" type="submit">Reveal my fate</button>
+        </form>
+        <div class="result" id="quiz-r" aria-live="polite"><h3>Ronan Kingsford, Duke of Penwythe</h3><p>You want a man who has shut the world out and a reason to make him open the gates. Ronan has a hand that will not close, a face he will not look at, and four rules that you will have broken by the end of the week. He will pretend to mind.</p><p><a class="btn btn-primary" href="../a-jilted-bride-for-the-battle-scarred-duke/sample/">Read his story free</a></p></div>
+        <div class="result" id="quiz-w" aria-live="polite"><h3>Alexander, Duke of Wrenwick</h3><p>You want a cold duke and the pleasure of thawing him. Alexander has frightened off every servant he ever had, eats breakfast alone, and has never once been told off by his own housekeeper. You would be the first.</p><p><a class="btn btn-primary" href="../a-fiery-widow-for-the-cold-duke/sample/">Read his story free</a></p></div>
+        <div class="result" id="quiz-s" aria-live="polite"><h3>Simon Cathcart, the rakish viscount</h3><p>You want laughter, mischief and a man who is incapable of mild attachment. Simon will steal your side of the bed, invent your entire courtship on the spot, and declare it the most interesting marriage of his life.</p><p><a class="btn btn-primary" href="../the-rakish-viscounts-pretend-wife/sample/">Read his story free</a></p></div>
+      </section>
+<script>
+document.getElementById('heroquiz').addEventListener('submit',function(e){
+  e.preventDefault();var t={r:0,w:0,s:0},f=new FormData(this),n=0;
+  f.forEach(function(v){t[v]++;n++});
+  if(n<4){document.querySelector('#heroquiz button').textContent='Do answer all four, dear';return;}
+  var best=Object.keys(t).sort(function(a,b){return t[b]-t[a]})[0];
+  document.querySelectorAll('.quiz .result').forEach(function(r){r.classList.remove('show')});
+  var el=document.getElementById('quiz-'+best);el.classList.add('show');el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  if(window.fbq)fbq('trackCustom','HeroQuiz',{hero:best});
+});
+</script>"""
 
 
 def build_guides_hub():
@@ -840,6 +984,7 @@ def build_guides_hub():
     title = "Clean Regency Romance Reading Guides | Emma Velott"
     desc = "Reading guides to clean Regency romance by trope. Books like Bridgerton, marriage of convenience, scarred heroes, grumpy dukes and sweet historical romance."
     cards = "\n".join(f"""      <article>
+        {ICONS.get(g.get('icon', 'fan'), '')}
         <h2><a href="../{g['slug']}/">{esc(g['h1'])}</a></h2>
         <p>{esc(g['desc'])}</p>
         <a class="more-link" href="../{g['slug']}/">Read the guide</a>
@@ -881,11 +1026,12 @@ def build_guides_hub():
       <div class="section-head">
         <span class="kicker">Find your next Regency romance</span>
         <h1 style="font-size:clamp(36px,4.6vw,52px)">Reading Guides</h1>
-        <p>Short guides to the clean Regency romance tropes readers love most, with the books to start with.</p>
+        <p>A small and entirely unreliable almanac of the tropes we love best, written with a raised eyebrow and a fresh pot of tea. Pick your poison, or let the quiz below pick it for you.</p>
       </div>
       <div class="ghub">
 {cards}
       </div>
+{HERO_QUIZ}
     </div>
   </section>
 </main>
