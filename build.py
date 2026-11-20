@@ -1004,6 +1004,8 @@ def main():
         "    <p><a class=\"btn btn-primary\" href=\"https://dl.bookfunnel.com/hrc14ff4jz\">Download your free epilogue</a></p>\n"
         "    <p style=\"margin-top:28px\">Haven't met them yet? The epilogue takes place after the book ends, so start with the story first.</p>\n"
         "    <p><a class=\"btn\" href=\"../a-jilted-bride-for-the-battle-scarred-duke/\">Get A Jilted Bride for the Battle-Scarred Duke</a></p>"))
+    if os.path.isdir("pins"):  # Pinterest pin images, served at /pins/
+        shutil.copytree("pins", os.path.join(OUT, "pins"), dirs_exist_ok=True)
     shutil.copy("styles.css", OUT)
     shutil.copy("favicon.svg", OUT)
     make_icons()
