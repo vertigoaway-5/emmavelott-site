@@ -122,6 +122,16 @@ if(window.gtag)gtag('event','begin_checkout',p?{currency:'USD',value:p.value,ite
 PIXEL = PIXEL.replace("{TRACKING}", TRACKING)
 
 
+def _ver(path):
+    """Short content hash, so browsers fetch a file again whenever it changes."""
+    import hashlib
+    return hashlib.md5(open(path, "rb").read()).hexdigest()[:8]
+
+
+CSS_VER = _ver("styles.css")
+JS_VER = _ver("bundle-upsell.js")
+
+
 def head_assets(prefix):
     return f"""<link rel="icon" href="{prefix}favicon.svg" type="image/svg+xml">
 <link rel="icon" href="{prefix}favicon.ico" sizes="32x32">
@@ -130,8 +140,8 @@ def head_assets(prefix):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{FONTS}">
-<link rel="stylesheet" href="{prefix}styles.css">
-<script src="/bundle-upsell.js" defer></script>
+<link rel="stylesheet" href="{prefix}styles.css?v={CSS_VER}">
+<script src="/bundle-upsell.js?v={JS_VER}" defer></script>
 <meta name="p:domain_verify" content="dcd450609e6fd7a415d088125b18bd74">
 {GOOGLE_TAG}
 {PIXEL}"""
