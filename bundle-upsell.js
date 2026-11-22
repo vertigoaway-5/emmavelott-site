@@ -1,12 +1,27 @@
 /* Bundle offer at checkout.
    When a reader clicks a single book's Gumroad buy link, show a short offer for the
-   Emma Velott Collection first. Shown once per browser session.
+   Emma Velott Collection first. Shown once per browser session, and shown again when a
+   reader who already picked a different book (it is sitting in their Gumroad cart) picks
+   another, because by then the bundle costs about the same or less than the singles.
    "No thanks, just this book" carries on to the original checkout, and only then does the
    site's tracking (InitiateCheckout / begin_checkout) fire for that book.
    The __PLACEHOLDERS__ are filled in by build.py from books.json and the BUNDLE settings. */
 (function () {
-  var BUNDLE = '__BUNDLE__', FULL = '__FULL__', PRICE = '__PRICE__', SAVE = '__SAVE__', COVERS = __COVERS__;
-  var KEY = 'ev_bundle_offer_seen', passthrough = false;
+  var BUNDLE = '__BUNDLE__', FULL = '__FULL__', PRICE = '__PRICE__', SAVE = '__SAVE__', COVERS = __COVERS__, BOOKS = __BOOKS__;
+  var KEY = 'ev_bundle_offer_seen', PICKS = 'ev_picked_books', DAY = 864e5, passthrough = false;
+
+  // Books this reader has already sent to Gumroad's cart (kept 30 days, like Gumroad's cart).
+  function picks() {
+    try {
+      var p = JSON.parse(localStorage.getItem(PICKS) || '{}'), now = Date.now(), out = {};
+      Object.keys(p).forEach(function (k) { if (now - p[k] < 30 * DAY && BOOKS[k]) out[k] = p[k]; });
+      return out;
+    } catch (e) { return {}; }
+  }
+  function remember(perm) { try { var p = picks(); p[perm] = Date.now(); localStorage.setItem(PICKS, JSON.stringify(p)); } catch (e) {} }
+  function forget() { try { localStorage.removeItem(PICKS); } catch (e) {} }
+  function perm(href) { var m = href.match(/gumroad\.com\/l\/([^/?#]+)/); return m ? m[1] : null; }
+  function money(n) { return '$' + n.toFixed(2); }
 
   function seen() { try { return sessionStorage.getItem(KEY) === '1'; } catch (e) { return false; } }
   function markSeen() { try { sessionStorage.setItem(KEY, '1'); } catch (e) {} }
@@ -41,12 +56,31 @@
     '.evu-price span{display:inline-block;margin-left:8px;font:700 12px/1 var(--body,Arial);letter-spacing:.08em;background:var(--claret,#7a2e33);color:#fbf0dc;padding:6px 9px;border-radius:20px;vertical-align:middle}' +
     '.evu-yes{display:block;background:var(--green,#2f4a3f);color:#fff;font:700 16px/1 var(--body,Arial);padding:17px 20px;border-radius:6px;text-decoration:none;margin:0 0 12px;transition:background .2s}' +
     '.evu-yes:hover{background:var(--green-2,#3c5c4f);color:#fff}' +
+    '.evu-note{font-size:13px!important;margin:12px 0 0!important;color:#8a8076!important}' +
     '.evu-no{background:none;border:0;font:400 14.5px var(--body,Arial);color:#7d746b;text-decoration:underline;cursor:pointer;padding:6px}' +
     '@media (max-height:600px){.evu{padding-top:24px}.evu-covers{height:110px;margin-bottom:10px}.evu-covers img{width:62px;height:93px}.evu-covers img:nth-child(2){width:72px;height:108px}}' +
     '@media (max-width:480px){.evu{padding:30px 20px 22px}.evu h3{font-size:23px}}';
 
-  function openOffer(link) {
+  function openOffer(link, others) {
     markSeen();
+    var here = perm(link.href), chosen = others.concat([here]).filter(function (k) { return BOOKS[k]; });
+    var singles = chosen.reduce(function (t, k) { return t + BOOKS[k].price; }, 0), bundle = parseFloat(PRICE);
+    var kicker = 'Before you go',
+        title = 'Why stop at one duke when you could have <em>all three love stories?</em>',
+        body = 'Get every Emma Velott romance in one bundle, this book included.',
+        note = '';
+    if (others.length) {
+      var names = others.map(function (k) { return '<em>' + BOOKS[k].title + '</em>'; }).join(' and ');
+      kicker = 'A better deal';
+      if (singles >= bundle) {
+        title = 'The bundle is <em>' + money(singles - bundle) + ' cheaper</em> than buying these separately.';
+        body = 'You already picked ' + names + '. Get all three together for ' + money(bundle) + ' instead.';
+      } else {
+        title = 'Add the third book for <em>just ' + money(bundle - singles) + ' more.</em>';
+        body = 'You already picked ' + names + '. For ' + money(bundle) + ' you get all three, this one included.';
+      }
+      note = '<p class="evu-note">Switching? Remove the single books from your Gumroad cart so you only pay for the bundle.</p>';
+    }
     if (!document.getElementById('evu-css')) {
       var st = document.createElement('style'); st.id = 'evu-css'; st.textContent = css; document.head.appendChild(st);
     }
@@ -61,12 +95,12 @@
         '<div class="evu-covers" aria-hidden="true">' +
           COVERS.map(function (s) { return '<img src="/covers/' + s + '.jpg" alt="">'; }).join('') +
         '</div>' +
-        '<p class="evu-k">Before you go</p>' +
-        '<h3 id="evu-title">Why stop at one duke when you could have <em>all three love stories?</em></h3>' +
-        '<p>Get every Emma Velott romance in one bundle, this book included.</p>' +
+        '<p class="evu-k">' + kicker + '</p>' +
+        '<h3 id="evu-title">' + title + '</h3>' +
+        '<p>' + body + '</p>' +
         '<div class="evu-price"><s>$' + FULL + '</s>$' + PRICE + '<span>SAVE ' + SAVE + '%</span></div>' +
         '<a class="evu-yes" href="' + bundleUrl(link.href) + '">Yes, I want all three</a>' +
-        '<button type="button" class="evu-no">No thanks, just this book</button>' +
+        '<button type="button" class="evu-no">No thanks, just this book</button>' + note +
       '</div>';
     document.body.appendChild(back);
     requestAnimationFrame(function () { back.classList.add('on'); });
@@ -77,8 +111,10 @@
     document.addEventListener('keydown', esc);
     back.querySelector('.evu-x').onclick = close;
     back.addEventListener('click', function (e) { if (e.target === back) close(); });
+    back.querySelector('.evu-yes').addEventListener('click', forget);
     back.querySelector('.evu-no').onclick = function () {
       close();
+      if (others.length) markOffered(here);
       passthrough = true;
       link.click();          // goes to the single-book checkout and fires the normal tracking
       passthrough = false;
@@ -87,12 +123,21 @@
 
   // Runs on window, before the site's own click tracking on document,
   // so a checkout is only recorded once the reader has actually chosen.
+  // Books the reader already said "just this book" to on this visit, so we don't ask twice.
+  function wasOffered(k) { try { return (sessionStorage.getItem('ev_reoffered') || '').split(',').indexOf(k) > -1; } catch (e) { return false; } }
+  function markOffered(k) { try { var v = sessionStorage.getItem('ev_reoffered'); sessionStorage.setItem('ev_reoffered', (v ? v + ',' : '') + k); } catch (e) {} }
   window.addEventListener('click', function (e) {
-    if (passthrough || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target.closest && e.target.closest('a[href*="gumroad.com/l/"]');
-    if (!a || a.href.indexOf(BUNDLE) === 0 || a.closest('.evu') || seen()) return;
+    if (!a || a.closest('.evu')) return;
+    if (a.href.indexOf(BUNDLE) === 0) { forget(); return; }
+    var here = perm(a.href);
+    if (passthrough || e.defaultPrevented) { if (here) remember(here); return; }
+    var others = Object.keys(picks()).filter(function (k) { return k !== here; });
+    var show = others.length ? !wasOffered(here) : !seen();
+    if (!show) { if (here) remember(here); return; }
     e.preventDefault();
     e.stopPropagation();
-    openOffer(a);
+    openOffer(a, others);
   }, true);
 })();

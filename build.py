@@ -206,7 +206,7 @@ def bundle_feature():
 
 
 def site_header(home):
-    return f"""<div class="ev-ribbon"><a href="{BUNDLE}"><span><b>New</b> The Emma Velott Collection, all three novels in one bundle, {BUNDLE_SAVE}% off</span><span class="go">Get the bundle &#8594;</span></a></div>
+    return f"""<div class="ev-ribbon"><a href="{BUNDLE}"><span class="long"><b>New</b> The Emma Velott Collection, all three novels in one bundle, {BUNDLE_SAVE}% off</span><span class="short"><b>New</b> All three novels, {BUNDLE_SAVE}% off</span><span class="go">Get the bundle &#8594;</span></a></div>
 <div class="strip"><a href="{home or './'}#newsletter">Get free bonus epilogues and reader gifts</a><span>&#183;</span>Ebooks delivered in moments<span>&#183;</span>Read on any device</div>
 <header class="masthead">
   <div class="wrap">
@@ -1270,7 +1270,8 @@ def main():
     shutil.copy("favicon.svg", OUT)
     js = open("bundle-upsell.js", encoding="utf-8").read()
     for k, v in {"__BUNDLE__": BUNDLE, "__FULL__": f"{BUNDLE_FULL:.2f}", "__PRICE__": f"{BUNDLE_PRICE:.2f}",
-                 "__SAVE__": str(BUNDLE_SAVE), "__COVERS__": json.dumps(BUNDLE_COVER_ORDER)}.items():
+                 "__SAVE__": str(BUNDLE_SAVE), "__COVERS__": json.dumps(BUNDLE_COVER_ORDER),
+                 "__BOOKS__": json.dumps({x["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"slug": x["slug"], "title": x["title"], "price": float(x["price"])} for x in BOOKS})}.items():
         js = js.replace(k, v)
     write(os.path.join(OUT, "bundle-upsell.js"), js)
     make_icons()

@@ -148,6 +148,7 @@ em.flourish{font-style:italic;font-weight:500;color:var(--green)}
 .evb .btn-gold:hover{background:#e6cd98;transform:translateY(-2px)}
 .evb-fine{font:400 13px/1.4 var(--body);color:#bdb4a2;margin:14px 0 0}
 @media (max-width:820px){.evb-card{grid-template-columns:1fr;padding:36px 24px 40px}.evb-stack{height:260px;max-width:340px;margin:0 auto;width:100%}.evb-stack img{width:120px;height:180px}.evb-stack img:nth-child(2){width:134px;height:201px}.evb-seal{width:86px;height:86px}.evb-seal strong{font-size:28px}}
+@media (max-width:480px){.evb-stack{max-width:320px;height:240px}.evb-stack img{width:104px;height:156px;top:52px}.evb-stack img:nth-child(1){left:0}.evb-stack img:nth-child(3){left:auto;right:0}.evb-stack img:nth-child(2){width:124px;height:186px;left:calc(50% - 62px);top:30px}.evb-seal{width:72px;height:72px;right:-4px;top:0}.evb-seal small{font-size:9px}.evb-seal strong{font-size:23px}.evb-card:hover .evb-stack img:nth-child(1),.evb-card:hover .evb-stack img:nth-child(3){transform:none}.evb-stack img:nth-child(1){transform:rotate(-7deg)}.evb-stack img:nth-child(3){transform:rotate(7deg)}}
 .connect{text-align:center}
 .connect p{color:var(--ink-soft);margin:0 0 26px}
 .connect-ctas{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
@@ -210,3 +211,21 @@ footer small{display:block;color:#c3b9a6;font-size:14px}
 .sample .sample-heading{font-size:clamp(24px,3vw,30px);margin:36px 0 22px}
 .sample p{font-family:var(--display);font-size:19px;line-height:1.75;margin:0 0 1.1em}
 .sample-end{margin-top:44px;padding-top:28px;border-top:1px solid var(--gold-soft)}
+
+/* phones: shorter header, buy button on the first screen of book pages */
+.ev-ribbon .short{display:none}
+@media (max-width:640px){
+.strip{display:none}
+.ev-ribbon{font-size:14px;padding:8px 12px}
+.ev-ribbon .long{display:none}.ev-ribbon .short{display:inline}
+.masthead{padding-top:14px}
+.masthead .tag{font-size:10.5px}
+.masthead .name{font-size:38px;margin:4px 0 8px}
+}
+@media (max-width:600px){
+.bp-grid{display:block}
+.bp-cover{float:left;width:118px;max-width:none;margin:4px 18px 10px 0}
+.bp-grid h1{font-size:26px;line-height:1.2}
+.bp-grid .buy-row{clear:both;padding-top:6px}
+.bp-grid .hook{clear:both}
+}
