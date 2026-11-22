@@ -1194,6 +1194,31 @@ def fetch_covers():
                         "-strip", "-interlace", "Plane", "-sampling-factor", "4:2:0", "-quality", "80", dst], check=True)
 
 
+def make_thumbs():
+    """Square 1000x1000 Gumroad thumbnails (shown at checkout and in the library), served at /thumbs/.
+    One per book, plus the-emma-velott-collection.jpg for the bundle."""
+    d = os.path.join(OUT, "thumbs")
+    os.makedirs(d, exist_ok=True)
+    cov = lambda s: os.path.join(OUT, "covers", s + ".jpg")
+    bg = ["-size", "1000x1000", "radial-gradient:#3c5c4f-#243a31"]
+    shadow = ["(", "+clone", "-background", "black", "-shadow", "60x18+0+14", ")", "+swap",
+              "-background", "none", "-layers", "merge", "+repage"]
+    try:
+        for b in BOOKS:
+            subprocess.run(["convert", *bg, "(", cov(b["slug"]), "-resize", "x860", *shadow, ")",
+                            "-gravity", "center", "-geometry", "+0-6", "-composite",
+                            "-quality", "86", os.path.join(d, b["slug"] + ".jpg")], check=True)
+        L, M, R = (cov(s) for s in BUNDLE_COVER_ORDER)
+        side = lambda f, deg: ["(", f, "-resize", "x600", "-background", "none", "-rotate", str(deg), *shadow, ")"]
+        subprocess.run(["convert", *bg,
+                        *side(L, -9), "-gravity", "center", "-geometry", "-250+40", "-composite",
+                        *side(R, 9), "-gravity", "center", "-geometry", "+250+40", "-composite",
+                        "(", M, "-resize", "x700", *shadow, ")", "-gravity", "center", "-geometry", "+0+0", "-composite",
+                        "-quality", "86", os.path.join(d, "the-emma-velott-collection.jpg")], check=True)
+    except Exception as e:
+        print("thumbnail generation skipped:", e)
+
+
 def make_icons():
     """PNG/ICO versions of favicon.svg for phones and older browsers."""
     try:
@@ -1249,6 +1274,8 @@ def main():
         js = js.replace(k, v)
     write(os.path.join(OUT, "bundle-upsell.js"), js)
     make_icons()
+    if not os.environ.get("SKIP_COVERS"):
+        make_thumbs()
     urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
