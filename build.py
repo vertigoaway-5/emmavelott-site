@@ -57,6 +57,10 @@ META_PIXEL_ID = "1181112837681717"
 FACEBOOK = "https://www.facebook.com/profile.php?id=61596411127455"
 PINTEREST = "https://www.pinterest.com/emmavelott/"
 BUNDLE = "https://emaanspark835.gumroad.com/l/emma-velott-collection"
+BUNDLE_PRICE = 8.99
+# Order of the fanned covers in the bundle feature and checkout offer (middle one is the big one).
+BUNDLE_COVER_ORDER = ["the-rakish-viscounts-pretend-wife", "a-fiery-widow-for-the-cold-duke",
+                      "a-jilted-bride-for-the-battle-scarred-duke"]
 
 GOOGLE_TAG_ID = "GTM-MC72GXTC"  # Google tag for GA4 property emmavelott.com (measurement ID G-BKEVHFKZTW)
 GOOGLE_TAG = f"""<script async src="https://www.googletagmanager.com/gtag/js?id={GOOGLE_TAG_ID}"></script>
@@ -81,7 +85,7 @@ document.addEventListener('submit',function(e){{if(e.target.classList&&e.target.
 # Which book each Gumroad link sells, keyed by its /l/ permalink.
 # Used to put the book's ID on the InitiateCheckout event.
 GUMROAD_PRODUCTS = {b["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"id": b["slug"], "name": b["title"], "value": float(b["price"])} for b in BOOKS}
-GUMROAD_PRODUCTS[BUNDLE.rsplit("/l/", 1)[1]] = {"id": "emma-velott-collection", "name": "The Emma Velott Collection", "value": 8.99}
+GUMROAD_PRODUCTS[BUNDLE.rsplit("/l/", 1)[1]] = {"id": "emma-velott-collection", "name": "The Emma Velott Collection", "value": BUNDLE_PRICE}
 
 # Sale attribution.
 # 1. When a visitor arrives with UTM tags (or a Meta/Bing/Pinterest click ID),
@@ -127,6 +131,7 @@ def head_assets(prefix):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{FONTS}">
 <link rel="stylesheet" href="{prefix}styles.css">
+<script src="/bundle-upsell.js" defer></script>
 <meta name="p:domain_verify" content="dcd450609e6fd7a415d088125b18bd74">
 {GOOGLE_TAG}
 {PIXEL}"""
@@ -157,8 +162,40 @@ def signup_box(uid, home, heading="Get free bonus epilogues and reader gifts", e
       </div>"""
 
 
+BUNDLE_FULL = round(sum(float(x["price"]) for x in BOOKS), 2)
+BUNDLE_SAVE = round(100 * (1 - BUNDLE_PRICE / BUNDLE_FULL))
+
+
+def bundle_feature():
+    """Home-page bundle feature, placed straight under the hero."""
+    covers = "\n".join(f'      <img src="covers/{s}.jpg" width="500" height="800" alt="">' for s in BUNDLE_COVER_ORDER)
+    by_slug = {x["slug"]: x for x in BOOKS}
+    items = "\n".join(
+        f'        <li>{esc(by_slug[s]["title"])} <i>&#183; {esc(", ".join(t.lower() for t in by_slug[s]["tropes"][:2]))}</i></li>'
+        for s in [BUNDLE_COVER_ORDER[1], BUNDLE_COVER_ORDER[0], BUNDLE_COVER_ORDER[2]] if s in by_slug)  # centre book listed first
+    return f"""  <section class="evb" id="bundle" aria-labelledby="bundle-title">
+  <div class="wrap"><div class="evb-card">
+    <div class="evb-stack" aria-hidden="true">
+{covers}
+      <div class="evb-seal"><small>Save</small><strong>{BUNDLE_SAVE}%</strong></div>
+    </div>
+    <div>
+      <p class="evb-kicker">The Emma Velott Collection</p>
+      <h2 id="bundle-title">Two brooding dukes, one rakish viscount, <em>and every happily-ever-after</em> in one bundle.</h2>
+      <p class="evb-lead">Every Emma Velott romance so far, delivered together, so you can binge from the first sigh to the last kiss.</p>
+      <ul class="evb-list">
+{items}
+      </ul>
+      <div class="evb-buy"><span class="evb-price"><s>${BUNDLE_FULL:.2f}</s>${BUNDLE_PRICE:.2f}</span><a class="btn-gold" href="{BUNDLE}">Get all three books</a></div>
+      <p class="evb-fine">EPUB &amp; PDF &#183; DRM free &#183; emailed to you instantly</p>
+    </div>
+  </div></div>
+  </section>"""
+
+
 def site_header(home):
-    return f"""<div class="strip"><a href="{home or './'}#newsletter">Get free bonus epilogues and reader gifts</a><span>&#183;</span>Ebooks delivered in moments<span>&#183;</span>Read on any device</div>
+    return f"""<div class="ev-ribbon"><a href="{BUNDLE}"><span><b>New</b> The Emma Velott Collection, all three novels in one bundle, {BUNDLE_SAVE}% off</span><span class="go">Get the bundle &#8594;</span></a></div>
+<div class="strip"><a href="{home or './'}#newsletter">Get free bonus epilogues and reader gifts</a><span>&#183;</span>Ebooks delivered in moments<span>&#183;</span>Read on any device</div>
 <header class="masthead">
   <div class="wrap">
     <p class="tag">Clean Regency Romance</p>
@@ -349,6 +386,7 @@ def build_home():
         "<!-- HERO_COVERS -->": covers,
         "<!-- BOOK_CARDS -->": cards,
         "<!-- REVIEWS -->": reviews,
+        "<!-- BUNDLE -->": bundle_feature(),
         "<!-- NEWSLETTER -->": signup_box("home", "", extra_class="band"),
     }.items():
         assert marker in s, marker
@@ -1193,6 +1231,11 @@ def main():
         shutil.copytree("pins", os.path.join(OUT, "pins"), dirs_exist_ok=True)
     shutil.copy("styles.css", OUT)
     shutil.copy("favicon.svg", OUT)
+    js = open("bundle-upsell.js", encoding="utf-8").read()
+    for k, v in {"__BUNDLE__": BUNDLE, "__FULL__": f"{BUNDLE_FULL:.2f}", "__PRICE__": f"{BUNDLE_PRICE:.2f}",
+                 "__SAVE__": str(BUNDLE_SAVE), "__COVERS__": json.dumps(BUNDLE_COVER_ORDER)}.items():
+        js = js.replace(k, v)
+    write(os.path.join(OUT, "bundle-upsell.js"), js)
     make_icons()
     urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
