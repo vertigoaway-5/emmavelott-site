@@ -73,10 +73,49 @@ n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}}(window,
 document,'script','https://connect.facebook.net/en_US/fbevents.js');
 fbq('init','{META_PIXEL_ID}');fbq('track','PageView');
-document.addEventListener('click',function(e){{var a=e.target.closest&&e.target.closest('a[href*="gumroad.com/l/"]');if(a)fbq('track','InitiateCheckout',{{content_name:a.href.split('/l/')[1]}});}});
 document.addEventListener('submit',function(e){{if(e.target.classList&&e.target.classList.contains('signup'))fbq('track','Lead');}});
 </script>
-<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id={META_PIXEL_ID}&ev=PageView&noscript=1"></noscript>"""
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id={META_PIXEL_ID}&ev=PageView&noscript=1"></noscript>
+{{TRACKING}}"""
+
+# Which book each Gumroad link sells, keyed by its /l/ permalink.
+# Used to put the book's ID on the InitiateCheckout event.
+GUMROAD_PRODUCTS = {b["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"id": b["slug"], "name": b["title"], "value": float(b["price"])} for b in BOOKS}
+GUMROAD_PRODUCTS[BUNDLE.rsplit("/l/", 1)[1]] = {"id": "emma-velott-collection", "name": "The Emma Velott Collection", "value": 8.99}
+
+# Sale attribution.
+# 1. When a visitor arrives with UTM tags (or a Meta/Bing/Pinterest click ID),
+#    remember where they came from for 7 days, matching Meta's 7-day click window.
+#    The latest ad click wins.
+# 2. Every Gumroad link on the page gets those UTM tags added, plus
+#    utm_term = the page the buy button was on, so each Gumroad sale shows
+#    the ad/campaign that brought the reader and the page they bought from.
+# 3. InitiateCheckout carries the book's ID, name and price.
+TRACKING = """<script>
+(function(){
+var P=__PRODUCTS__,K=['utm_source','utm_medium','utm_campaign','utm_content'],S='ev_utm',DAY=864e5,t=null;
+try{t=JSON.parse(localStorage.getItem(S)||'null');if(t&&Date.now()-t.at>7*DAY)t=null;}catch(e){}
+var q=new URLSearchParams(location.search),n=null;
+if(K.some(function(k){return q.get(k);})){n={};K.forEach(function(k){if(q.get(k))n[k]=q.get(k).slice(0,100);});}
+else if(q.get('fbclid')){n={utm_source:'facebook',utm_medium:'paid_social',utm_campaign:'untagged_meta_ad'};}
+else if(q.get('msclkid')){n={utm_source:'bing',utm_medium:'cpc',utm_campaign:'untagged_bing_ad'};}
+else if(q.get('epik')){n={utm_source:'pinterest',utm_medium:'paid_social',utm_campaign:'untagged_pinterest_ad'};}
+else if(!t&&document.referrer){var r='';try{r=new URL(document.referrer).hostname.replace(/^www\\./,'');}catch(e){}
+if(r&&r!==location.hostname){var s=/facebook|fb\\.|instagram|pinterest|pin\\.it/.test(r);n={utm_source:r,utm_medium:s?'social':'referral'};}}
+if(n){n.at=Date.now();t=n;try{localStorage.setItem(S,JSON.stringify(t));}catch(e){}}
+if(!t)t={utm_source:'emmavelott.com',utm_medium:'website'};
+var page=location.pathname.replace(/^\\/|\\/$|\\.html$/g,'')||'home';
+function prod(a){var m=a.href.match(/gumroad\\.com\\/l\\/([^/?#]+)/);return m?P[m[1]]:null;}
+function tag(a){try{var u=new URL(a.href);K.forEach(function(k){if(t[k]&&!u.searchParams.get(k))u.searchParams.set(k,t[k]);});
+u.searchParams.set('utm_term',page.slice(0,100));a.href=u.toString();}catch(e){}}
+function tagAll(){document.querySelectorAll('a[href*="gumroad.com"]').forEach(tag);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tagAll);else tagAll();
+document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href*="gumroad.com"]');if(!a)return;tag(a);
+var p=prod(a);if(window.fbq)fbq('track','InitiateCheckout',p?{content_ids:[p.id],content_type:'product',content_name:p.name,value:p.value,currency:'USD',num_items:1}:{content_name:'gumroad_store'});
+if(window.gtag)gtag('event','begin_checkout',p?{currency:'USD',value:p.value,items:[{item_id:p.id,item_name:p.name,price:p.value}]}:{});},true);
+})();
+</script>""".replace("__PRODUCTS__", json.dumps(GUMROAD_PRODUCTS, separators=(",", ":")))
+PIXEL = PIXEL.replace("{TRACKING}", TRACKING)
 
 
 def head_assets(prefix):
