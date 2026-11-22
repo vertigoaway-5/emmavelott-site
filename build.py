@@ -94,7 +94,9 @@ GUMROAD_PRODUCTS[BUNDLE.rsplit("/l/", 1)[1]] = {"id": "emma-velott-collection", 
 # 2. Every Gumroad link on the page gets those UTM tags added, plus
 #    utm_term = the page the buy button was on, so each Gumroad sale shows
 #    the ad/campaign that brought the reader and the page they bought from.
-# 3. InitiateCheckout carries the book's ID, name and price.
+# 3. Buy links get wanted=true, which skips Gumroad's product page and opens
+#    the payment form straight away (one less click before paying).
+# 4. InitiateCheckout carries the book's ID, name and price.
 TRACKING = """<script>
 (function(){
 var P=__PRODUCTS__,K=['utm_source','utm_medium','utm_campaign','utm_content'],S='ev_utm',DAY=864e5,t=null;
@@ -111,7 +113,7 @@ if(!t)t={utm_source:'emmavelott.com',utm_medium:'website'};
 var page=location.pathname.replace(/^\\/|\\/$|\\.html$/g,'')||'home';
 function prod(a){var m=a.href.match(/gumroad\\.com\\/l\\/([^/?#]+)/);return m?P[m[1]]:null;}
 function tag(a){try{var u=new URL(a.href);K.forEach(function(k){if(t[k]&&!u.searchParams.get(k))u.searchParams.set(k,t[k]);});
-u.searchParams.set('utm_term',page.slice(0,100));a.href=u.toString();}catch(e){}}
+u.searchParams.set('utm_term',page.slice(0,100));if(/\\/l\\//.test(u.pathname))u.searchParams.set('wanted','true');a.href=u.toString();}catch(e){}}
 function tagAll(){document.querySelectorAll('a[href*="gumroad.com"]').forEach(tag);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tagAll);else tagAll();
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href*="gumroad.com"]');if(!a)return;tag(a);
