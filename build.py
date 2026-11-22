@@ -48,7 +48,9 @@ def cover_alt(b):
 
 
 def page_title(b):
-    return f"{b['title']}: {b['subtitle']} | Emma Velott"
+    """Kept to about 65 characters so Google shows it in full."""
+    t = f"{b['title']} | Clean Regency Romance"
+    return t if len(t) <= 65 else f"{b['title']} | Emma Velott"
 
 
 # ---------- shared pieces ----------
@@ -268,7 +270,7 @@ def sample_link(b, prefix=""):
 def build_sample(b):
     s = SAMPLES[b["slug"]]
     url = f"{SITE}/{b['slug']}/sample/"
-    title = f"Read the first chapter of {b['title']} free | Emma Velott"
+    title = f"First Chapter Free: {b['title']}"
     desc = f"Read the opening of {b['title']}, {b['subtitle'].lower()} by Emma Velott, free online."
     paras = "\n".join(f"      <p>{esc(p)}</p>" for p in s["paras"])
     return f"""<!DOCTYPE html>
@@ -684,7 +686,7 @@ def build_xmas_page():
     """Seasonal landing page for 'clean Christmas Regency romance' searches."""
     url = f"{SITE}/{XMAS_SLUG}/"
     title = "Clean Christmas Regency Romance Books | Emma Velott"
-    desc = "Clean Christmas Regency romance from Emma Velott. Snowbound dukes, Yorkshire villages and Twelfth Night happily-ever-afters, plus a snowy winter novella to read now."
+    desc = "Clean Christmas Regency romance from Emma Velott. Snowbound dukes, Yorkshire villages and Twelfth Night happily-ever-afters, plus a winter novella."
     rakish = next(b for b in BOOKS if b["slug"] == "the-rakish-viscounts-pretend-wife")
 
     upcoming = []
@@ -1071,7 +1073,7 @@ document.getElementById('heroquiz').addEventListener('submit',function(e){
 def build_guides_hub():
     url = f"{SITE}/{GUIDES_SLUG}/"
     title = "Clean Regency Romance Reading Guides | Emma Velott"
-    desc = "Witty reading guides to clean Regency romance. Books like Bridgerton, Georgette Heyer and Jane Austen, clean authors like Julia Quinn, plus marriage of convenience, scarred heroes and grumpy dukes."
+    desc = "Witty guides to clean Regency romance. Books like Bridgerton, Georgette Heyer and Jane Austen, plus marriage of convenience, scarred and grumpy dukes."
     cards = "\n".join(f"""      <article>
         {ICONS.get(g.get('icon', 'fan'), '')}
         <h2><a href="../{g['slug']}/">{esc(g['h1'])}</a></h2>
