@@ -217,10 +217,7 @@ def bundle_feature():
 
 
 def site_header(home):
-    if PREORDERS:
-        ribbon = f"""<div class="ev-ribbon"><a href="{home}#christmas"><span class="long"><b>New</b> Four Christmas romances, out {PREORDERS[0]['release']}. Pre-order now</span><span class="short"><b>New</b> Christmas pre-orders open</span><span class="go">See the books &#8594;</span></a></div>"""
-    else:
-        ribbon = f"""<div class="ev-ribbon"><a href="{BUNDLE}"><span class="long"><b>New</b> The Emma Velott Collection, all three novels in one bundle, {BUNDLE_SAVE}% off</span><span class="short"><b>New</b> All three novels, {BUNDLE_SAVE}% off</span><span class="go">Get the bundle &#8594;</span></a></div>"""
+    ribbon = f"""<div class="ev-ribbon"><a href="{BUNDLE}"><span class="long"><b>New</b> The Emma Velott Collection, all three novels in one bundle, {BUNDLE_SAVE}% off</span><span class="short"><b>New</b> All three novels, {BUNDLE_SAVE}% off</span><span class="go">Get the bundle &#8594;</span></a></div>"""
     return ribbon + f"""
 <div class="strip"><a href="{home or './'}#newsletter">Get free bonus epilogues and reader gifts</a><span>&#183;</span>Ebooks delivered in moments<span>&#183;</span>Read on any device</div>
 <header class="masthead">
