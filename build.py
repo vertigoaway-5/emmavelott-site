@@ -59,7 +59,7 @@ META_PIXEL_ID = "1181112837681717"
 FACEBOOK = "https://www.facebook.com/profile.php?id=61596411127455"
 PINTEREST = "https://www.pinterest.com/emmavelott/"
 BUNDLE = "https://emaanspark835.gumroad.com/l/emma-velott-collection"
-BUNDLE_PRICE = 8.99
+BUNDLE_PRICE = 9.99
 # Order of the fanned covers in the bundle feature and checkout offer (middle one is the big one).
 BUNDLE_COVER_ORDER = ["the-rakish-viscounts-pretend-wife", "a-fiery-widow-for-the-cold-duke",
                       "a-jilted-bride-for-the-battle-scarred-duke"]
@@ -306,7 +306,7 @@ def build_sample(b):
       <div class="sample-end">
         <p class="hook">Want to know what happens next?</p>
         {buy_row(b)}
-        <p class="small">Or get all three books together for $8.99 in <a href="{BUNDLE}">the Emma Velott Collection</a>.</p>
+        <p class="small">Or get all three books together for ${BUNDLE_PRICE:.2f} in <a href="{BUNDLE}">the Emma Velott Collection</a>.</p>
       </div>
     </div>
   </article>
