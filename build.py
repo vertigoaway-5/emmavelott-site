@@ -34,6 +34,11 @@ REVIEWS = json.load(open("reviews.json", encoding="utf-8"))
 # Reading guides (trope/search landing pages): one entry per page, see build_guide()
 GUIDES = json.load(open("guides.json", encoding="utf-8")) if os.path.exists("guides.json") else []
 GUIDES_SLUG = "reading-guides"
+# Christmas pre-orders: same fields as books.json plus "release" / "release_iso".
+# Kept apart from BOOKS so the three-book Collection bundle maths and upsells are untouched.
+PREORDERS = json.load(open("preorders.json", encoding="utf-8")) if os.path.exists("preorders.json") else []
+XMAS_SET = "https://emaanspark835.gumroad.com/l/emma-velott-christmas"
+XMAS_SET_PRICE = 15.99
 SLUGS = {b["slug"] for b in BOOKS}
 for r in REVIEWS:
     assert r.get("book") in SLUGS, f"review for unknown book: {r.get('book')}"
@@ -88,6 +93,10 @@ document.addEventListener('submit',function(e){{if(e.target.classList&&e.target.
 # Used to put the book's ID on the InitiateCheckout event.
 GUMROAD_PRODUCTS = {b["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"id": b["slug"], "name": b["title"], "value": float(b["price"])} for b in BOOKS}
 GUMROAD_PRODUCTS[BUNDLE.rsplit("/l/", 1)[1]] = {"id": "emma-velott-collection", "name": "The Emma Velott Collection", "value": BUNDLE_PRICE}
+for _b in PREORDERS:
+    GUMROAD_PRODUCTS[_b["buy"].rstrip("/").rsplit("/l/", 1)[1]] = {"id": _b["slug"], "name": _b["title"], "value": float(_b["price"])}
+if PREORDERS:
+    GUMROAD_PRODUCTS[XMAS_SET.rsplit("/l/", 1)[1]] = {"id": "emma-velott-christmas", "name": "An Emma Velott Christmas", "value": XMAS_SET_PRICE}
 
 # Sale attribution.
 # 1. When a visitor arrives with UTM tags (or a Meta/Bing/Pinterest click ID),
@@ -208,7 +217,11 @@ def bundle_feature():
 
 
 def site_header(home):
-    return f"""<div class="ev-ribbon"><a href="{BUNDLE}"><span class="long"><b>New</b> The Emma Velott Collection, all three novels in one bundle, {BUNDLE_SAVE}% off</span><span class="short"><b>New</b> All three novels, {BUNDLE_SAVE}% off</span><span class="go">Get the bundle &#8594;</span></a></div>
+    if PREORDERS:
+        ribbon = f"""<div class="ev-ribbon"><a href="{home}#christmas"><span class="long"><b>New</b> Four Christmas romances, out {PREORDERS[0]['release']}. Pre-order now</span><span class="short"><b>New</b> Christmas pre-orders open</span><span class="go">See the books &#8594;</span></a></div>"""
+    else:
+        ribbon = f"""<div class="ev-ribbon"><a href="{BUNDLE}"><span class="long"><b>New</b> The Emma Velott Collection, all three novels in one bundle, {BUNDLE_SAVE}% off</span><span class="short"><b>New</b> All three novels, {BUNDLE_SAVE}% off</span><span class="go">Get the bundle &#8594;</span></a></div>"""
+    return ribbon + f"""
 <div class="strip"><a href="{home or './'}#newsletter">Get free bonus epilogues and reader gifts</a><span>&#183;</span>Ebooks delivered in moments<span>&#183;</span>Read on any device</div>
 <header class="masthead">
   <div class="wrap">
@@ -254,6 +267,12 @@ def buy_row(b, extra=""):
     kobo = ""
     if b.get("kobo"):
         kobo = f'\n            <a class="store-link" href="{b["kobo"]}" target="_blank" rel="noopener">Also on Kobo</a>'
+    if b.get("release"):
+        return f"""<div class="buy-row">
+            <span class="price">${b['price']}</span>
+            <a class="btn btn-primary" href="{b['buy']}">Pre-order the ebook</a>
+            <span class="format">Out {esc(b['release'])} &#183; EPUB &amp; PDF</span>{extra}
+          </div>"""
     return f"""<div class="buy-row">
             <span class="price">${b['price']}</span>
             <a class="btn btn-primary" href="{b['buy']}">Buy the ebook</a>
@@ -339,6 +358,66 @@ def review_cards(reviews, show_book):
 
 # ---------- home page ----------
 
+def xmas_set_box(prefix):
+    if not PREORDERS:
+        return ""
+    full = sum(float(x["price"]) for x in PREORDERS)
+    covers = "".join(f'<img src="{prefix}covers/{x["slug"]}.jpg" width="500" height="800" loading="lazy" alt="">' for x in PREORDERS)
+    return f"""  <section class="section" aria-labelledby="xset-title">
+    <div class="wrap">
+      <div class="xset">
+        <div class="xset-covers">{covers}</div>
+        <div>
+          <span class="kicker">Pre-order all four and save</span>
+          <h2 id="xset-title">An Emma Velott Christmas</h2>
+          <p>The Duke Who Wouldn't Keep Christmas and all three Hollybourne novellas in one set, delivered on {esc(PREORDERS[0]['release'])}.</p>
+          <div class="buy-row"><span class="price"><s>${full:.2f}</s> ${XMAS_SET_PRICE:.2f}</span><a class="btn btn-primary" href="{XMAS_SET}">Pre-order all four</a></div>
+        </div>
+      </div>
+    </div>
+  </section>"""
+
+
+def preorder_cards(prefix):
+    return "\n".join(
+        f"""      <article class="book" id="{x['slug']}">
+        <div class="frame"><a href="{prefix}{x['slug']}/"><img src="{prefix}covers/{x['slug']}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(x)}"></a></div>
+        <div>
+          <span class="kicker">Pre-order &#183; out {esc(x['release'])}</span>
+          <h3><a href="{prefix}{x['slug']}/">{esc(x['title'])}</a></h3>
+          <p class="subtitle">{esc(x['subtitle'])}</p>
+          <p class="tropes">{tropes_html(x['tropes'][:3])}</p>
+          <p class="blurb">{esc(x['short'])}</p>
+          {buy_row(x, chr(10) + '            <a class="more-link" href="' + prefix + x['slug'] + '/">Read more about this book</a>')}
+        </div>
+      </article>"""
+        for x in PREORDERS)
+
+
+def preorder_section():
+    if not PREORDERS:
+        return ""
+    return f"""  <section class="section" id="christmas" aria-labelledby="xmas-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">New for Christmas</span>
+        <h2 id="xmas-title">Pre-order the Christmas romances</h2>
+        <p>A duke who won't keep Christmas, and three snowy novellas set in one Yorkshire village. All four arrive on {esc(PREORDERS[0]['release'])}.</p>
+      </div>
+      <div class="xgrid4">
+{"".join(f"""        <article class="xmini">
+          <a href="{x['slug']}/"><img src="covers/{x['slug']}.jpg" width="500" height="800" alt="{cover_alt(x)}"></a>
+          <h3><a href="{x['slug']}/">{esc(x['title'])}</a></h3>
+          <p class="subtitle">{esc(x['subtitle'])}</p>
+          <div class="xmini-buy"><span class="price">${x['price']}</span><a class="btn btn-primary" href="{x['buy']}">Pre-order</a></div>
+        </article>
+""" for x in PREORDERS)}      </div>
+      <p style="text-align:center;margin-top:18px"><a class="more-link" href="{XMAS_SLUG}/">Read about all four Christmas books</a></p>
+    </div>
+  </section>
+{xmas_set_box("")}"""
+
+
 def build_home():
     s = open("index.html", encoding="utf-8").read()
     covers = "\n".join(
@@ -399,6 +478,7 @@ def build_home():
         "<!-- FOOTER -->": site_footer(""),
         "<!-- HERO_COVERS -->": covers,
         "<!-- BOOK_CARDS -->": cards,
+        "<!-- PREORDERS -->": preorder_section(),
         "<!-- REVIEWS -->": reviews,
         "<!-- BUNDLE -->": bundle_feature(),
         "<!-- NEWSLETTER -->": signup_box("home", "", extra_class="band"),
@@ -413,7 +493,8 @@ def build_home():
 def build_book(b):
     url = f"{SITE}/{b['slug']}/"
     img = f"{SITE}/covers/{b['slug']}.jpg"
-    others = [o for o in BOOKS if o["slug"] != b["slug"]]
+    pre = bool(b.get("release"))
+    others = [o for o in PREORDERS + BOOKS if o["slug"] != b["slug"]] if pre else [o for o in BOOKS if o["slug"] != b["slug"]]
     length = "Novella" if b["kind"] == "novella" else "Full-length novel"
     reviews = [r for r in REVIEWS if r["book"] == b["slug"]]
     ld = {
@@ -431,12 +512,13 @@ def build_book(b):
                 "genre": ["Regency romance", "Historical romance", "Clean romance"],
                 "keywords": ", ".join(["clean Regency romance", "closed-door romance"] + [t.lower() for t in b["tropes"]]),
                 "inLanguage": "en",
-                "datePublished": "2026-08",
+                "datePublished": b.get("release_iso", "2026-08"),
                 "publisher": {"@type": "Person", "name": "Emma Velott"},
                 "bookFormat": "https://schema.org/EBook",
                 "sameAs": [b["kobo"]] if b.get("kobo") else [],
                 "offers": {"@type": "Offer", "price": b["price"], "priceCurrency": "USD",
-                           "availability": "https://schema.org/InStock", "url": b["buy"]},
+                           "availability": "https://schema.org/PreOrder" if pre else "https://schema.org/InStock", "url": b["buy"],
+                           **({"availabilityStarts": b["release_iso"]} if pre else {})},
             },
             {
                 "@type": "BreadcrumbList",
@@ -511,23 +593,22 @@ def build_book(b):
         <p class="tropes">{tropes_html(b['tropes'])}</p>
         {buy_row(b)}
         {sample_link(b)}
-        <p class="small">Secure checkout through Gumroad. Your download link is emailed to you straight away.</p>
+        <p class="small">{f"Secure checkout through Gumroad. Pay now and your book is emailed to you on {esc(b['release'])}." if pre else "Secure checkout through Gumroad. Your download link is emailed to you straight away."}</p>
         <p class="hook">{esc(b['hook'])}</p>
         <div class="bp-blurb">
 {blurb}
         </div>
         <ul class="facts">
           <li><strong>Length</strong>{esc(b.get('length') or length)}</li>
-          <li><strong>Published</strong>{esc(b.get('published', ''))}, ebook, published by Emma Velott</li>
+          <li><strong>{"Release date" if pre else "Published"}</strong>{esc(b.get('release') or b.get('published', ''))}, ebook, published by Emma Velott</li>
           <li><strong>Heat level</strong>Clean and closed-door</li>
           <li><strong>Ending</strong>Happily ever after</li>
           <li><strong>Formats</strong>EPUB and PDF, DRM free</li>
         </ul>
         <div class="howmini">
-          <h2>How buying works</h2>
+          <h2>{"How pre-ordering works" if pre else "How buying works"}</h2>
           <ol>
-            <li>Press "Buy the ebook" and pay at Gumroad's secure checkout. No account needed.</li>
-            <li>Your download link arrives by email right away.</li>
+            {f'<li>Press "Pre-order the ebook" and pay at Gumroad\'s secure checkout. No account needed.</li><li>On {esc(b["release"])} the book arrives by email and in your Gumroad library.</li>' if pre else '<li>Press "Buy the ebook" and pay at Gumroad\'s secure checkout. No account needed.</li><li>Your download link arrives by email right away.</li>'}
             <li>Read the EPUB on Kindle (with Send to Kindle), Kobo, Apple Books or your phone.</li>
           </ol>
           <p class="small" style="margin-top:10px"><a href="../#how">More questions answered</a></p>
@@ -542,6 +623,7 @@ def build_book(b):
       {signup_box(b["slug"][:12], "../")}
     </div>
   </section>
+{xmas_set_box("../") if pre else ""}
   <section class="section tinted" aria-labelledby="more-title">
     <div class="wrap">
       <div class="section-head"><h2 id="more-title">More clean Regency romance from Emma Velott</h2></div>
@@ -725,7 +807,7 @@ def build_xmas_page():
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="{url}">
-<meta property="og:image" content="{SITE}/covers/{rakish['slug']}.jpg">
+<meta property="og:image" content="{SITE}/covers/{(PREORDERS[0] if PREORDERS else rakish)['slug']}.jpg">
 <meta name="twitter:card" content="summary_large_image">
 {head_assets('../')}
 <style>
@@ -753,14 +835,13 @@ def build_xmas_page():
         <h1 id="x-title" style="font-size:clamp(36px,4.6vw,52px)">Clean Christmas Regency Romance</h1>
         <p>Candlelit drawing rooms, snow on the lanes and a duke who would very much prefer to skip the whole season. Emma's Christmas Regency romances are clean and closed-door, with all the longing of the season and a happily-ever-after by Twelfth Night.</p>
       </div>
-      <div class="xgrid">
-{chr(10).join(upcoming)}
-      </div>
+      {preorder_cards("../") if PREORDERS else '<div class="xgrid">' + chr(10).join(upcoming) + '</div>'}
       <div style="margin-top:40px">
-      {signup_box("xmas", "../", "Hear first when the Christmas books are out")}
+      {signup_box("xmas", "../", "Get free bonus epilogues and reader gifts")}
       </div>
     </div>
   </section>
+{xmas_set_box("../")}
   <section class="section tinted" aria-labelledby="now-title">
     <div class="wrap">
       <div class="section-head">
@@ -1184,7 +1265,7 @@ def build_simple(title, h1, body):
 
 def fetch_covers():
     os.makedirs(os.path.join(OUT, "covers"), exist_ok=True)
-    for b in BOOKS:
+    for b in BOOKS + PREORDERS:
         src = f"/tmp/{b['slug']}.src"
         dst = os.path.join(OUT, "covers", b["slug"] + ".jpg")
         local = os.path.join("covers", b["slug"] + ".jpg")
@@ -1244,6 +1325,8 @@ def main():
     if not os.environ.get("SKIP_COVERS"):
         fetch_covers()
     write(os.path.join(OUT, "index.html"), build_home())
+    for b in PREORDERS:
+        write(os.path.join(OUT, b["slug"], "index.html"), build_book(b))
     for b in BOOKS:
         write(os.path.join(OUT, b["slug"], "index.html"), build_book(b))
         if b["slug"] in SAMPLES:
@@ -1279,7 +1362,7 @@ def main():
     make_icons()
     if not os.environ.get("SKIP_COVERS"):
         make_thumbs()
-    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
+    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in PREORDERS + BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"

@@ -1,0 +1,91 @@
+[
+ {
+  "slug": "the-duke-who-wouldnt-keep-christmas",
+  "title": "The Duke Who Wouldn't Keep Christmas",
+  "subtitle": "A Clean Regency Christmas Romance",
+  "kicker": "Christmas duke romance",
+  "kind": "novel",
+  "price": "5.99",
+  "buy": "https://emaanspark835.gumroad.com/l/duke-who-wouldnt-keep-christmas",
+  "release": "5 December 2026",
+  "release_iso": "2026-12-05",
+  "tropes": ["Grumpy duke", "Snowed in", "Family secret", "Christmas house"],
+  "meta": "Pre-order a clean Regency Christmas romance. A duke who has not kept Christmas since he was nine receives an invitation in his dead mother's hand. Out 5 December 2026.",
+  "short": "A duke who has not kept Christmas since he was nine receives an invitation written in his dead mother's hand, and goes to a house he has never heard of to prove it a forgery.",
+  "hook": "The letter is in his mother's hand. It is dated twenty-one years ago.",
+  "blurb": [
+   "Miles Aylward, Duke of Weyburn, has not kept Christmas since he was nine years old, when every adult in his mother's sickroom knew it was her last day and nobody told him.",
+   "Twenty-one years later a letter arrives inviting him to keep Christmas at a house called Wintersett. It is written in his mother's hand, and it is dated December 1798. He goes to Derbyshire meaning to stay one night and unmask a forger.",
+   "What he finds is a warm house half dressed in greenery, and Miss Emmeline Prowse, who has kept it for years and posted the letter herself without ever reading it. She manages everyone's comfort and answers no questions about her own past. He cannot bear to be the last person in a room to know something. Snowed into one house for the whole of the season, the two of them are about to find out exactly what that costs.",
+   "A clean, closed-door Regency Christmas romance with a guarded duke, a heroine with secrets of her own, and a happily ever after worth every snowflake."
+  ],
+  "duke": true,
+  "length": "Full-length novel"
+ },
+ {
+  "slug": "twelve-days-to-keep-an-earl",
+  "title": "Twelve Days to Keep an Earl",
+  "subtitle": "The Hollybourne Christmas Novellas, Book One",
+  "kicker": "Christmas novella",
+  "kind": "novella",
+  "price": "3.99",
+  "buy": "https://emaanspark835.gumroad.com/l/twelve-days-to-keep-an-earl",
+  "release": "5 December 2026",
+  "release_iso": "2026-12-05",
+  "tropes": ["Curvy heroine", "Charming earl", "Village Christmas", "Banter"],
+  "meta": "Pre-order a clean Regency Christmas novella. A golden earl and a curvy, plain-spoken heroine in a snowy Yorkshire village. Out 5 December 2026.",
+  "short": "Christmas 1815 in a Yorkshire dale village. A curvy, plain-spoken woman who stopped waiting to be chosen, and a golden earl who has never had to work for anything.",
+  "hook": "He has never had to work for anything. She is about to change that.",
+  "blurb": [
+   "Christmas 1815 in Hollybourne, a Yorkshire dale village where everyone knows everyone's business and the snow has no intention of letting anybody leave.",
+   "She is a full-figured, plain-spoken woman who stopped waiting to be chosen a long time ago. He is a golden, charming earl who has never had to work for anything in his life. Twelve days, one village and a great deal of banter later, he discovers that keeping her might be the first thing worth the effort.",
+   "A light-hearted, clean and closed-door Regency Christmas novella, the first of three linked stories set in the same village between Christmas and Twelfth Night."
+  ],
+  "duke": false,
+  "length": "Novella"
+ },
+ {
+  "slug": "twelve-nights-to-trust-a-duke",
+  "title": "Twelve Nights to Trust a Duke",
+  "subtitle": "The Hollybourne Christmas Novellas, Book Two",
+  "kicker": "Christmas novella",
+  "kind": "novella",
+  "price": "3.99",
+  "buy": "https://emaanspark835.gumroad.com/l/twelve-nights-to-trust-a-duke",
+  "release": "5 December 2026",
+  "release_iso": "2026-12-05",
+  "tropes": ["Bluestocking", "Rugged duke", "Snowed in", "Banter"],
+  "meta": "Pre-order a clean Regency Christmas novella. A bluestocking and a rugged duke spend twelve snowbound nights arguing in a Yorkshire village. Out 5 December 2026.",
+  "short": "She came to Hollybourne for a quiet Christmas with her books. She did not plan on a duke in the library, and she certainly did not plan on liking him.",
+  "hook": "She trusts what she can read. He is not in any of her books.",
+  "blurb": [
+   "She came to Hollybourne for a quiet Christmas with her books. She did not plan on a duke in the library, and she certainly did not plan on liking him.",
+   "A sharp-tongued bluestocking who trusts what she can read and very little else, and a rugged duke who keeps his own counsel, spend twelve snowbound nights arguing over everything from philosophy to the proper way to hang a kissing bough. Somewhere between the arguments, trust starts to look a lot like love.",
+   "A light-hearted, clean and closed-door Regency Christmas novella, the second of three linked stories set in the same Yorkshire village."
+  ],
+  "duke": true,
+  "length": "Novella"
+ },
+ {
+  "slug": "twelve-days-to-teach-a-marquess",
+  "title": "Twelve Days to Teach a Marquess",
+  "subtitle": "The Hollybourne Christmas Novellas, Book Three",
+  "kicker": "Christmas novella",
+  "kind": "novella",
+  "price": "3.99",
+  "buy": "https://emaanspark835.gumroad.com/l/twelve-days-to-teach-a-marquess",
+  "release": "5 December 2026",
+  "release_iso": "2026-12-05",
+  "tropes": ["Governess", "Polished marquess", "Village Christmas", "Banter"],
+  "meta": "Pre-order a clean Regency Christmas novella. England's most sought-after governess and a marquess who believes he has nothing left to learn. Out 5 December 2026.",
+  "short": "The most sought-after governess in England, and a polished marquess who believes he has nothing left to learn.",
+  "hook": "It is not at all clear who is teaching whom.",
+  "blurb": [
+   "She is the most sought-after governess in England, and she has corrected the manners of better men than him. He is a polished marquess who believes he has nothing left to learn.",
+   "Between Christmas and Twelfth Night in snowy Hollybourne, the lessons begin, and it is not at all clear who is teaching whom.",
+   "A light-hearted, clean and closed-door Regency Christmas novella, the final story of three set in the same Yorkshire village."
+  ],
+  "duke": false,
+  "length": "Novella"
+ }
+]
