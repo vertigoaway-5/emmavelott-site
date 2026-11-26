@@ -260,3 +260,4 @@ footer small{display:block;color:#c3b9a6;font-size:14px}
 .shop-bundle .save{background:var(--claret);color:#fff;border-radius:999px;padding:3px 12px;font-size:14px;font-weight:600}
 .shop-bundle .small{margin-top:12px}
 @media (max-width:900px){.xgrid3{grid-template-columns:repeat(2,minmax(0,1fr))}.shop-bundles{grid-template-columns:1fr}}
+.shop-bundles.one{grid-template-columns:minmax(0,560px);justify-content:center}

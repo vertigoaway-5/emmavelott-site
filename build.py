@@ -36,7 +36,9 @@ GUIDES = json.load(open("guides.json", encoding="utf-8")) if os.path.exists("gui
 GUIDES_SLUG = "reading-guides"
 # Christmas pre-orders: same fields as books.json plus "release" / "release_iso".
 # Kept apart from BOOKS so the three-book Collection bundle maths and upsells are untouched.
-PREORDERS = json.load(open("preorders.json", encoding="utf-8")) if os.path.exists("preorders.json") else []
+# Set to True to put the Christmas pre-orders back on the site (home section, book pages, Christmas page, shop).
+SHOW_PREORDERS = False
+PREORDERS = json.load(open("preorders.json", encoding="utf-8")) if SHOW_PREORDERS and os.path.exists("preorders.json") else []
 XMAS_SET = "https://emaanspark835.gumroad.com/l/emma-velott-christmas"
 XMAS_SET_PRICE = 15.99
 SLUGS = {b["slug"] for b in BOOKS}
@@ -1247,7 +1249,7 @@ def build_shop():
 
     def card(b):
         pre = bool(b.get("release"))
-        tag = f"Pre-order &#183; out {esc(b['release'])}" if pre else "Available now"
+        tag = f"Pre-order &#183; out {esc(b['release'])}" if pre else ("Available now" if PREORDERS else esc(b['kicker']))
         label = "Pre-order" if pre else "Buy the ebook"
         return f"""        <article class="xmini">
           <span class="kicker">{tag}</span>
@@ -1277,7 +1279,7 @@ def build_shop():
             "The Duke Who Wouldn't Keep Christmas and all three Hollybourne Christmas novellas.",
             [x["slug"] for x in PREORDERS], sum(float(x["price"]) for x in PREORDERS), XMAS_SET_PRICE,
             XMAS_SET, "Pre-order all four", f"Delivered on {esc(PREORDERS[0]['release'])} &#183; EPUB &amp; PDF &#183; DRM free"))
-    bundles.append(bundle("The Emma Velott Collection", "Available now",
+    bundles.append(bundle("The Emma Velott Collection", "Available now" if PREORDERS else f"All three books &#183; save {BUNDLE_SAVE}%",
         "A Fiery Widow for the Cold Duke, The Rakish Viscount's Pretend Wife and A Jilted Bride for the Battle-Scarred Duke.",
         BUNDLE_COVER_ORDER, BUNDLE_FULL, BUNDLE_PRICE, BUNDLE, "Get all three books", "Emailed to you instantly &#183; EPUB &amp; PDF &#183; DRM free"))
 
@@ -1342,7 +1344,7 @@ def build_shop():
   <section class="section" aria-labelledby="s-bundles">
     <div class="wrap">
       <div class="section-head"><h2 id="s-bundles">Bundles</h2><p>Get the books together and pay less than buying them one by one.</p></div>
-      <div class="shop-bundles">
+      <div class="shop-bundles{'' if len(bundles) > 1 else ' one'}">
 {chr(10).join(bundles)}
       </div>
     </div>
