@@ -1,14 +1,23 @@
 /* Bundle offer at checkout.
    When a reader clicks a single book's Gumroad buy link, show a short offer for the
-   Emma Velott Collection first. Shown once per browser session, and shown again when a
+   matching bundle first (the Emma Velott Collection, or the Hollybourne Christmas set for a
+   Hollybourne novella). Shown once per browser session, and shown again when a
    reader who already picked a different book (it is sitting in their Gumroad cart) picks
    another, because by then the bundle costs about the same or less than the singles.
    "No thanks, just this book" carries on to the original checkout, and only then does the
    site's tracking (InitiateCheckout / begin_checkout) fire for that book.
    The __PLACEHOLDERS__ are filled in by build.py from books.json and the BUNDLE settings. */
 (function () {
-  var BUNDLE = '__BUNDLE__', FULL = '__FULL__', PRICE = '__PRICE__', SAVE = '__SAVE__', COVERS = __COVERS__, BOOKS = __BOOKS__;
-  var KEY = 'ev_bundle_offer_seen', PICKS = 'ev_picked_books', DAY = 864e5, passthrough = false;
+  // One entry per bundle: the Emma Velott Collection and the Hollybourne Christmas set.
+  // A single book is only ever offered the bundle it belongs to.
+  var SETS = __SETS__;
+  var BUNDLE, FULL, PRICE, SAVE, COVERS, BOOKS, COPY;
+  var KEY, PICKS, DAY = 864e5, passthrough = false;
+  function use(set) {
+    BUNDLE = set.bundle; FULL = set.full; PRICE = set.price; SAVE = set.save; COVERS = set.covers; BOOKS = set.books; COPY = set.copy;
+    KEY = 'ev_bundle_offer_seen' + set.key; PICKS = 'ev_picked_books' + set.key;
+  }
+  use(SETS[0]);
 
   // Books this reader has already sent to Gumroad's cart (kept 30 days, like Gumroad's cart).
   function picks() {
@@ -66,8 +75,8 @@
     var here = perm(link.href), chosen = others.concat([here]).filter(function (k) { return BOOKS[k]; });
     var singles = chosen.reduce(function (t, k) { return t + BOOKS[k].price; }, 0), bundle = parseFloat(PRICE);
     var kicker = 'Before you go',
-        title = 'Why stop at one duke when you could have <em>all three love stories?</em>',
-        body = 'Get every Emma Velott romance in one bundle, this book included.',
+        title = COPY.title,
+        body = COPY.body,
         note = '';
     if (others.length) {
       var names = others.map(function (k) { return '<em>' + BOOKS[k].title + '</em>'; }).join(' and ');
@@ -130,8 +139,11 @@
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target.closest && e.target.closest('a[href*="gumroad.com/l/"]');
     if (!a || a.closest('.evu')) return;
-    if (a.href.indexOf(BUNDLE) === 0) { forget(); return; }
-    var here = perm(a.href);
+    var here = perm(a.href), set = null, i;
+    for (i = 0; i < SETS.length; i++) { if (a.href.indexOf(SETS[i].bundle) === 0) { use(SETS[i]); forget(); return; } }
+    for (i = 0; i < SETS.length; i++) { if (here && SETS[i].books[here]) set = SETS[i]; }
+    if (!set) return;   // not one of our single books: no offer
+    use(set);
     if (passthrough || e.defaultPrevented) { if (here) remember(here); return; }
     var others = Object.keys(picks()).filter(function (k) { return k !== here; });
     var show = others.length ? !wasOffered(here) : !seen();

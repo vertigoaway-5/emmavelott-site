@@ -1496,10 +1496,18 @@ def main():
     shutil.copy("styles.css", OUT)
     shutil.copy("favicon.svg", OUT)
     js = open("bundle-upsell.js", encoding="utf-8").read()
-    for k, v in {"__BUNDLE__": BUNDLE, "__FULL__": f"{BUNDLE_FULL:.2f}", "__PRICE__": f"{BUNDLE_PRICE:.2f}",
-                 "__SAVE__": str(BUNDLE_SAVE), "__COVERS__": json.dumps(BUNDLE_COVER_ORDER),
-                 "__BOOKS__": json.dumps({x["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"slug": x["slug"], "title": x["title"], "price": float(x["price"])} for x in CORE})}.items():
-        js = js.replace(k, v)
+    def _set(key, bundle, full, price, save, covers, books, title, body):
+        return {"key": key, "bundle": bundle, "full": f"{full:.2f}", "price": f"{price:.2f}", "save": str(save), "covers": covers,
+                "books": {x["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"slug": x["slug"], "title": x["title"], "price": float(x["price"])} for x in books},
+                "copy": {"title": title, "body": body}}
+    sets = [_set("", BUNDLE, BUNDLE_FULL, BUNDLE_PRICE, BUNDLE_SAVE, BUNDLE_COVER_ORDER, CORE,
+                 "Why stop at one duke when you could have <em>all three love stories?</em>",
+                 "Get every Emma Velott romance in one bundle, this book included.")]
+    if HOLLY:
+        sets.append(_set("_holly", HOLLY_BUNDLE, HOLLY_FULL, HOLLY_PRICE, HOLLY_SAVE, [x["slug"] for x in HOLLY], HOLLY,
+                         "Why stop at one when you could spend <em>all twelve days in Hollybourne?</em>",
+                         "Get all three Hollybourne Christmas novellas in one set, this one included."))
+    js = js.replace("__SETS__", json.dumps(sets, ensure_ascii=False))
     write(os.path.join(OUT, "bundle-upsell.js"), js)
     make_icons()
     if not os.environ.get("SKIP_COVERS"):
