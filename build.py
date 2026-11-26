@@ -42,7 +42,7 @@ CORE = [b for b in BOOKS if not b.get("series")]
 HOLLY = [b for b in BOOKS if b.get("series") == "hollybourne"]
 HOLLY_SLUG = "hollybourne-christmas-novellas"
 HOLLY_NAME = "The Hollybourne Christmas Novellas"
-HOLLY_BUNDLE = "https://emaanspark835.gumroad.com/l/hollybourne-christmas-novellas"
+HOLLY_BUNDLE = "https://emmavelott.gumroad.com/l/hollybourne-christmas-novellas"
 HOLLY_PRICE = 9.99
 HOLLY_FULL = round(sum(float(x["price"]) for x in HOLLY), 2)
 HOLLY_SAVE = round(100 * (1 - HOLLY_PRICE / HOLLY_FULL)) if HOLLY else 0
@@ -73,7 +73,7 @@ def page_title(b):
 META_PIXEL_ID = "1181112837681717"
 FACEBOOK = "https://www.facebook.com/profile.php?id=61596411127455"
 PINTEREST = "https://www.pinterest.com/emmavelott/"
-BUNDLE = "https://emaanspark835.gumroad.com/l/emma-velott-collection"
+BUNDLE = "https://emmavelott.gumroad.com/l/emma-velott-collection"
 BUNDLE_PRICE = 9.99
 # Order of the fanned covers in the bundle feature and checkout offer (middle one is the big one).
 BUNDLE_COVER_ORDER = ["the-rakish-viscounts-pretend-wife", "a-fiery-widow-for-the-cold-duke",
@@ -258,7 +258,7 @@ def site_footer(home):
       <li><a href="https://www.instagram.com/emmavelott/" target="_blank" rel="noopener">Instagram</a></li>
       <li><a href="{FACEBOOK}" target="_blank" rel="noopener">Facebook</a></li>
       <li><a href="{PINTEREST}" target="_blank" rel="noopener">Pinterest</a></li>
-      <li><a href="https://emaanspark835.gumroad.com/" target="_blank" rel="noopener">Shop</a></li>
+      <li><a href="https://emmavelott.gumroad.com/" target="_blank" rel="noopener">Shop</a></li>
     </ul>
     <small>&#169; {datetime.date.today().year} Emma Velott. Payments are handled securely by Gumroad, and your ebook is emailed to you right after purchase.</small>
   </div>
