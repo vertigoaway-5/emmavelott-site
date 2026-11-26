@@ -228,6 +228,7 @@ def site_header(home):
   <nav class="mainnav" aria-label="Main">
     <ul>
       <li><a href="{home}#books">The Books</a></li>
+      <li><a href="{home}{SHOP_SLUG}/">Shop</a></li>
       <li><a href="{home}#how">How It Works</a></li>
       <li><a href="{home}#indie">A Note from Emma</a></li>
       <li><a href="{home}#follow">Follow</a></li>
@@ -249,7 +250,7 @@ def site_footer(home):
       <li><a href="https://www.instagram.com/emmavelott/" target="_blank" rel="noopener">Instagram</a></li>
       <li><a href="{FACEBOOK}" target="_blank" rel="noopener">Facebook</a></li>
       <li><a href="{PINTEREST}" target="_blank" rel="noopener">Pinterest</a></li>
-      <li><a href="https://emaanspark835.gumroad.com/" target="_blank" rel="noopener">Shop</a></li>
+      <li><a href="{home}{SHOP_SLUG}/">Shop</a></li>
     </ul>
     <small>&#169; {datetime.date.today().year} Emma Velott. Payments are handled securely by Gumroad, and your ebook is emailed to you right after purchase.</small>
   </div>
@@ -1235,6 +1236,124 @@ def build_404():
 """
 
 
+SHOP_SLUG = "shop"
+
+
+def build_shop():
+    """One page with every book (pre-orders first) and then both bundles."""
+    url = f"{SITE}/{SHOP_SLUG}/"
+    title = "Shop All Books and Bundles | Emma Velott"
+    desc = "Every clean Regency romance by Emma Velott in one place: Christmas pre-orders, books available now, and money-saving bundles. EPUB and PDF, DRM free."
+
+    def card(b):
+        pre = bool(b.get("release"))
+        tag = f"Pre-order &#183; out {esc(b['release'])}" if pre else "Available now"
+        label = "Pre-order" if pre else "Buy the ebook"
+        return f"""        <article class="xmini">
+          <span class="kicker">{tag}</span>
+          <a href="../{b['slug']}/"><img src="../covers/{b['slug']}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(b)}"></a>
+          <h3><a href="../{b['slug']}/">{esc(b['title'])}</a></h3>
+          <p class="subtitle">{esc(b['subtitle'])}</p>
+          <div class="xmini-buy"><span class="price">${b['price']}</span><a class="btn btn-primary" href="{b['buy']}">{label}</a></div>
+          <a class="more-link" href="../{b['slug']}/">About this book</a>
+        </article>"""
+
+    def bundle(name, kicker, text, slugs, full, price, href, label, fine):
+        covers = "".join(f'<img src="../covers/{s}.jpg" width="500" height="800" loading="lazy" alt="">' for s in slugs)
+        save = round(100 * (1 - price / full))
+        return f"""      <article class="shop-bundle">
+        <div class="xset-covers">{covers}</div>
+        <span class="kicker">{kicker}</span>
+        <h3>{name}</h3>
+        <p>{text}</p>
+        <div class="buy-row"><span class="price"><s>${full:.2f}</s> ${price:.2f}</span><span class="save">Save {save}%</span></div>
+        <a class="btn btn-primary" href="{href}">{label}</a>
+        <p class="small">{fine}</p>
+      </article>"""
+
+    bundles = []
+    if PREORDERS:
+        bundles.append(bundle("An Emma Velott Christmas", "Christmas set &#183; pre-order",
+            "The Duke Who Wouldn't Keep Christmas and all three Hollybourne Christmas novellas.",
+            [x["slug"] for x in PREORDERS], sum(float(x["price"]) for x in PREORDERS), XMAS_SET_PRICE,
+            XMAS_SET, "Pre-order all four", f"Delivered on {esc(PREORDERS[0]['release'])} &#183; EPUB &amp; PDF &#183; DRM free"))
+    bundles.append(bundle("The Emma Velott Collection", "Available now",
+        "A Fiery Widow for the Cold Duke, The Rakish Viscount's Pretend Wife and A Jilted Bride for the Battle-Scarred Duke.",
+        BUNDLE_COVER_ORDER, BUNDLE_FULL, BUNDLE_PRICE, BUNDLE, "Get all three books", "Emailed to you instantly &#183; EPUB &amp; PDF &#183; DRM free"))
+
+    pre_html = ""
+    if PREORDERS:
+        pre_html = f"""  <section class="section" style="padding-top:12px" aria-labelledby="s-pre">
+    <div class="wrap">
+      <div class="section-head"><h2 id="s-pre">Christmas pre-orders</h2><p>Pay now and the book arrives by email on {esc(PREORDERS[0]['release'])}.</p></div>
+      <div class="xgrid4">
+{chr(10).join(card(b) for b in PREORDERS)}
+      </div>
+    </div>
+  </section>"""
+    ld = {"@context": "https://schema.org", "@graph": [
+        {"@type": "CollectionPage", "name": "Shop Emma Velott", "url": url, "description": desc},
+        {"@type": "ItemList", "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "url": f"{SITE}/{b['slug']}/", "name": b["title"]}
+            for i, b in enumerate(PREORDERS + BOOKS)]}]}
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Emma Velott">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/covers/{(PREORDERS + BOOKS)[0]['slug']}.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{head_assets('../')}
+<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{site_header('../')}
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span>Shop</nav>
+  </div>
+  <section class="section" style="padding-top:28px;padding-bottom:20px">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">Clean Regency romance, bought direct</span>
+        <h1 style="font-size:clamp(36px,4.6vw,52px)">Shop all books</h1>
+        <p>Every Emma Velott book and bundle in one place. Ebooks come as EPUB and PDF, DRM free, through Gumroad's secure checkout.</p>
+      </div>
+    </div>
+  </section>
+{pre_html}
+  <section class="section tinted" aria-labelledby="s-now">
+    <div class="wrap">
+      <div class="section-head"><h2 id="s-now">Available now</h2><p>Emailed to you the moment you buy.</p></div>
+      <div class="xgrid4 xgrid3">
+{chr(10).join(card(b) for b in BOOKS)}
+      </div>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="s-bundles">
+    <div class="wrap">
+      <div class="section-head"><h2 id="s-bundles">Bundles</h2><p>Get the books together and pay less than buying them one by one.</p></div>
+      <div class="shop-bundles">
+{chr(10).join(bundles)}
+      </div>
+    </div>
+  </section>
+</main>
+{site_footer('../')}
+</body>
+</html>
+"""
+
+
 def build_simple(title, h1, body):
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -1330,6 +1449,7 @@ def main():
             write(os.path.join(OUT, b["slug"], "sample", "index.html"), build_sample(b))
     write(os.path.join(OUT, DUKE_SLUG, "index.html"), build_duke_page())
     write(os.path.join(OUT, XMAS_SLUG, "index.html"), build_xmas_page())
+    write(os.path.join(OUT, SHOP_SLUG, "index.html"), build_shop())
     for g in GUIDES:
         write(os.path.join(OUT, g["slug"], "index.html"), build_guide(g))
     if GUIDES:
@@ -1359,7 +1479,7 @@ def main():
     make_icons()
     if not os.environ.get("SKIP_COVERS"):
         make_thumbs()
-    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in PREORDERS + BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
+    urls = [SITE + "/", f"{SITE}/{SHOP_SLUG}/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in PREORDERS + BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"
