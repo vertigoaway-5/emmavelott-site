@@ -213,7 +213,7 @@ def bundle_feature():
     <div>
       <p class="evb-kicker">The Emma Velott Collection</p>
       <h2 id="bundle-title">Two brooding dukes, one rakish viscount, <em>and every happily-ever-after</em> in one bundle.</h2>
-      <p class="evb-lead">Every Emma Velott romance so far, delivered together, so you can binge from the first sigh to the last kiss.</p>
+      <p class="evb-lead">All three of Emma's Regency romances, delivered together, so you can binge from the first sigh to the last kiss.</p>
       <ul class="evb-list">
 {items}
       </ul>
@@ -225,7 +225,7 @@ def bundle_feature():
 
 
 def site_header(home):
-    return f"""<div class="ev-ribbon"><a href="{BUNDLE}"><span class="long"><b>New</b> The Emma Velott Collection, all three novels in one bundle, {BUNDLE_SAVE}% off</span><span class="short"><b>New</b> All three novels, {BUNDLE_SAVE}% off</span><span class="go">Get the bundle &#8594;</span></a></div>
+    return f"""<div class="ev-ribbon"><a href="{BUNDLE}"><span class="long"><b>New</b> The Emma Velott Collection, all three Regency romances in one bundle, {BUNDLE_SAVE}% off</span><span class="short"><b>New</b> All three romances, {BUNDLE_SAVE}% off</span><span class="go">Get the bundle &#8594;</span></a></div>
 <div class="strip"><a href="{home or './'}#newsletter">Get free bonus epilogues and reader gifts</a><span>&#183;</span>Ebooks delivered in moments<span>&#183;</span>Read on any device</div>
 <header class="masthead">
   <div class="wrap">
@@ -234,10 +234,10 @@ def site_header(home):
   </div>
   <nav class="mainnav" aria-label="Main">
     <ul>
-      <li><a href="{home}books/">The Books</a></li>
-      <li><a href="{home}{HOLLY_SLUG}/">Christmas Novellas</a></li>
+      <li><a href="{home}books/"><span class="nl-long">The </span>Books</a></li>
+      <li><a href="{home}{HOLLY_SLUG}/">Christmas<span class="nl-long"> Novellas</span></a></li>
       <li><a href="{home}#how">How It Works</a></li>
-      <li><a href="{home}#indie">A Note from Emma</a></li>
+      <li><a href="{home}#indie"><span class="nl-long">A Note from Emma</span><span class="nl-short">About</span></a></li>
       <li><a href="{home}#follow">Follow</a></li>
     </ul>
   </nav>
@@ -1588,7 +1588,7 @@ def main():
                 "copy": {"title": title, "body": body}}
     sets = [_set("", BUNDLE, BUNDLE_FULL, BUNDLE_PRICE, BUNDLE_SAVE, BUNDLE_COVER_ORDER, CORE,
                  "Why stop at one duke when you could have <em>all three love stories?</em>",
-                 "Get every Emma Velott romance in one bundle, this book included.")]
+                 "Get all three Regency romances in one bundle, this book included.")]
     if HOLLY:
         sets.append(_set("_holly", HOLLY_BUNDLE, HOLLY_FULL, HOLLY_PRICE, HOLLY_SAVE, [x["slug"] for x in HOLLY], HOLLY,
                          "Why stop at one when you could spend <em>all twelve days in Hollybourne?</em>",
