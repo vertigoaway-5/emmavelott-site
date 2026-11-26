@@ -249,3 +249,14 @@ footer small{display:block;color:#c3b9a6;font-size:14px}
 .evb-xmas .evb-card{background:radial-gradient(120% 140% at 15% 20%,#7d343a 0%,#662a30 55%,#4d1f25 100%)}
 .evb-xmas .evb-seal{background:#2f4a3f}
 .price s.was{font-size:.62em;opacity:.6;margin-right:8px;font-weight:400}
+
+/* Home page cover row (full list lives on /books/) */
+.cover-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:22px;margin-top:8px}
+.cover-tile{display:block;text-decoration:none;color:inherit;text-align:center}
+.cover-tile img{aspect-ratio:5/8;object-fit:cover;width:100%;box-shadow:0 16px 26px -16px rgba(43,38,34,.6);transition:transform .25s}
+.cover-tile:hover img{transform:translateY(-4px)}
+.cover-tile span{display:block;margin-top:12px;font-size:15px;line-height:1.3}
+.cover-tile:hover span{color:var(--claret)}
+.cover-row-cta{text-align:center;margin-top:34px}
+@media (max-width:900px){.cover-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:520px){.cover-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}}

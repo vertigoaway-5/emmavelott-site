@@ -234,7 +234,7 @@ def site_header(home):
   </div>
   <nav class="mainnav" aria-label="Main">
     <ul>
-      <li><a href="{home}#books">The Books</a></li>
+      <li><a href="{home}books/">The Books</a></li>
       <li><a href="{home}{HOLLY_SLUG}/">Christmas Novellas</a></li>
       <li><a href="{home}#how">How It Works</a></li>
       <li><a href="{home}#indie">A Note from Emma</a></li>
@@ -249,7 +249,7 @@ def site_footer(home):
   <div class="wrap">
     <a class="name" href="{home or './'}">Emma Velott</a>
     <ul>
-      <li><a href="{home}#books">The Books</a></li>
+      <li><a href="{home}books/">The Books</a></li>
       <li><a href="{home}clean-duke-romance-books/">Clean Duke Romances</a></li>
       <li><a href="{home}{HOLLY_SLUG}/">Hollybourne Christmas Novellas</a></li>
       <li><a href="{home}clean-christmas-regency-romance/">Christmas Romances</a></li>
@@ -425,6 +425,97 @@ def review_cards(reviews, show_book):
     return "\n".join(out)
 
 
+def cover_row(books, prefix=""):
+    """Compact row of linked covers with titles, used on the home page."""
+    items = "\n".join(
+        f'        <a class="cover-tile" href="{prefix}{b["slug"]}/"><img src="{prefix}covers/{b["slug"]}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(b)}"><span>{esc(b["title"])}</span></a>'
+        for b in books)
+    return f"""      <div class="cover-row">
+{items}
+      </div>"""
+
+
+BOOKS_SLUG = "books"
+
+
+def build_books_page():
+    """All books on one page: the novels first, then the Hollybourne novellas."""
+    url = f"{SITE}/{BOOKS_SLUG}/"
+    title = "All Books | Clean Regency Romance by Emma Velott"
+    desc = "Every clean Regency romance by Emma Velott in one place: duke romances, a rakish viscount and the Hollybourne Christmas Novellas. Ebooks in EPUB and PDF."
+    ld = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "CollectionPage", "name": "Books by Emma Velott", "url": url, "description": desc,
+             "mainEntity": {"@type": "ItemList", "itemListElement": [
+                 {"@type": "ListItem", "position": i + 1, "url": f"{SITE}/{b['slug']}/", "name": b["title"]}
+                 for i, b in enumerate(CORE + HOLLY)]}},
+            {"@type": "BreadcrumbList", "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + "/"},
+                {"@type": "ListItem", "position": 2, "name": "Books", "item": url}]},
+        ],
+    }
+    holly = ""
+    if HOLLY:
+        holly = f"""  <section class="section" id="christmas" aria-labelledby="christmas-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="christmas-title">{HOLLY_NAME}</h2>
+        <p>Three clean Christmas novellas, one Yorkshire village, read in any order. <a class="more-link" href="../{HOLLY_SLUG}/">See the set and save {HOLLY_SAVE}%</a></p>
+      </div>
+{chr(10).join(book_card(b, "../") for b in HOLLY)}
+    </div>
+  </section>"""
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Emma Velott">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/covers/{CORE[0]['slug']}.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{head_assets('../')}
+<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{site_header('../')}
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span>Books</nav>
+  </div>
+  <section class="section tinted" style="padding-top:36px" id="novels" aria-labelledby="books-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">Clean Regency romance by Emma Velott</span>
+        <h1 id="books-title" style="font-size:clamp(36px,4.6vw,52px)">The Books</h1>
+        <p>Grumpy dukes, scarred dukes and one rakish viscount, in clean Regency love stories with a happily-ever-after well earned.</p>
+        <p><a class="more-link" href="../clean-duke-romance-books/">Clean duke romances</a> &#183; <a class="more-link" href="../{HOLLY_SLUG}/">The Hollybourne Christmas Novellas</a></p>
+      </div>
+{chr(10).join(book_card(b, "../") for b in CORE)}
+    </div>
+  </section>
+{holly}
+{bundle_feature().replace('src="covers/', 'src="../covers/')}
+  <section class="section" style="padding-top:0">
+    <div class="wrap narrow">
+      {signup_box("books", "../")}
+    </div>
+  </section>
+</main>
+{site_footer('../')}
+</body>
+</html>
+"""
+
+
 # ---------- home page ----------
 
 def build_home():
@@ -434,14 +525,8 @@ def build_home():
         f'{PRIORITY if i == 0 else ""}alt="{cover_alt(b)}"></a>'
         for i, b in enumerate(CORE)
     )
-    cards = "\n".join(book_card(b) for b in CORE)
-    if HOLLY:
-        cards += f"""
-      <div class="section-head hb-sub" id="christmas">
-        <h2>{HOLLY_NAME}</h2>
-        <p>Three clean Christmas novellas, one Yorkshire village, read in any order. <a class="more-link" href="{HOLLY_SLUG}/">See the set and save {HOLLY_SAVE}%</a></p>
-      </div>
-""" + "\n".join(book_card(b) for b in HOLLY)
+    cards = cover_row(CORE + HOLLY) + """
+      <p class="cover-row-cta"><a class="btn btn-primary" href="books/">See all the books</a></p>"""
     reviews = ""
     if REVIEWS:
         reviews = f"""  <section class="section" id="reviews" aria-labelledby="reviews-title">
@@ -499,7 +584,7 @@ def build_book(b):
     pool = HOLLY if in_holly else CORE
     others = [o for o in pool if o["slug"] != b["slug"]]
     more_title = "The other Hollybourne Christmas Novellas" if in_holly else "More clean Regency romance from Emma Velott"
-    crumb_mid = (f'<a href="../{HOLLY_SLUG}/">Hollybourne Christmas Novellas</a>' if in_holly else '<a href="../#books">Books</a>')
+    crumb_mid = (f'<a href="../{HOLLY_SLUG}/">Hollybourne Christmas Novellas</a>' if in_holly else '<a href="../books/">Books</a>')
     series_fact = ('\n          <li><strong>Series</strong><a href="../' + HOLLY_SLUG + '/">' + HOLLY_NAME + '</a>. Each novella stands alone, so read them in any order.</li>') if in_holly else ""
     offer = holly_offer_line("../") if in_holly else ""
     more_cta = (f'\n      <p style="text-align:center;margin-top:26px"><a class="btn btn-primary" href="{HOLLY_BUNDLE}">{"Pre-order" if HOLLY_PREORDER else "Get"} all three for ${HOLLY_PRICE:.2f}</a></p>' if in_holly else "")
@@ -531,7 +616,7 @@ def build_book(b):
                 "@type": "BreadcrumbList",
                 "itemListElement": [
                     {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + "/"},
-                    {"@type": "ListItem", "position": 2, "name": "Books", "item": SITE + "/#books"},
+                    {"@type": "ListItem", "position": 2, "name": "Books", "item": SITE + "/books/"},
                     {"@type": "ListItem", "position": 3, "name": b["title"], "item": url},
                 ],
             },
@@ -1389,7 +1474,7 @@ def build_simple(title, h1, body):
   <div class="wrap narrow">
     <h1 style="font-size:clamp(34px,4.4vw,46px);margin-bottom:14px">{h1}</h1>
 {body}
-    <p style="margin-top:28px"><a class="btn btn-primary" href="../#books">Browse the books</a></p>
+    <p style="margin-top:28px"><a class="btn btn-primary" href="../books/">Browse the books</a></p>
   </div>
 </main>
 {site_footer('../')}
@@ -1471,6 +1556,7 @@ def main():
         write(os.path.join(OUT, b["slug"], "index.html"), build_book(b))
         if b["slug"] in SAMPLES:
             write(os.path.join(OUT, b["slug"], "sample", "index.html"), build_sample(b))
+    write(os.path.join(OUT, BOOKS_SLUG, "index.html"), build_books_page())
     write(os.path.join(OUT, DUKE_SLUG, "index.html"), build_duke_page())
     write(os.path.join(OUT, XMAS_SLUG, "index.html"), build_xmas_page())
     if HOLLY:
@@ -1512,7 +1598,7 @@ def main():
     make_icons()
     if not os.environ.get("SKIP_COVERS"):
         make_thumbs()
-    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + ([f"{SITE}/{HOLLY_SLUG}/"] if HOLLY else []) + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
+    urls = [SITE + "/", f"{SITE}/{BOOKS_SLUG}/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + ([f"{SITE}/{HOLLY_SLUG}/"] if HOLLY else []) + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"
