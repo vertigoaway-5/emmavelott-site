@@ -275,8 +275,12 @@ def buy_row(b, extra=""):
         kobo = f'\n            <a class="store-link" href="{b["kobo"]}" target="_blank" rel="noopener">Also on Kobo</a>'
     label = "Pre-order the ebook" if b.get("preorder") else "Buy the ebook"
     fmt = f"EPUB &amp; PDF &#183; {RELEASE_NOTE}" if b.get("preorder") else "EPUB &amp; PDF"
+    # "list" is the regular price; while it is set the page shows it crossed out beside the launch price.
+    was = f'<s class="was">${b["list"]}</s>' if b.get("list") else ""
+    if b.get("list"):
+        fmt = "Christmas launch price &#183; " + fmt
     return f"""<div class="buy-row">
-            <span class="price">${b['price']}</span>
+            <span class="price">{was}${b['price']}</span>
             <a class="btn btn-primary" href="{b['buy']}">{label}</a>
             <span class="format">{fmt}</span>{kobo}{extra}
           </div>"""
@@ -981,7 +985,7 @@ def build_holly_page():
     <div class="wrap">
       <div class="section-head">
         <h2 id="hb-books-title">The three novellas</h2>
-        <p>Buy one at ${HOLLY[0]['price']}, or all three together for ${HOLLY_PRICE:.2f}.</p>
+        <p>One novella is ${HOLLY[0]['price']} at the Christmas launch price. All three together are ${HOLLY_PRICE:.2f}.</p>
       </div>
 {chr(10).join(book_card(b, "../", tropes=4) for b in HOLLY)}
       <p style="text-align:center;margin-top:34px"><a class="btn btn-primary" href="{HOLLY_BUNDLE}">{cta} for ${HOLLY_PRICE:.2f}</a></p>

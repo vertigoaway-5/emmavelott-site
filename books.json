@@ -95,7 +95,7 @@
     "subtitle": "A Hollybourne Christmas Novella",
     "kicker": "Fake courtship in a snowbound village",
     "kind": "novella",
-    "price": "3.99",
+    "price": "4.99",
     "buy": "https://emaanspark835.gumroad.com/l/twelve-days-to-keep-an-earl",
     "tropes": [
       "Fake courtship",
@@ -118,7 +118,7 @@
     "date": "2026-12-05",
     "length": "About 115 pages",
     "series": "hollybourne",
-    "preorder": true
+    "list": "5.99"
   },
   {
     "slug": "twelve-nights-to-trust-a-duke",
@@ -126,7 +126,7 @@
     "subtitle": "A Hollybourne Christmas Novella",
     "kicker": "A bluestocking, a stranger and a snowed-in library",
     "kind": "novella",
-    "price": "3.99",
+    "price": "4.99",
     "buy": "https://emaanspark835.gumroad.com/l/twelve-nights-to-trust-a-duke",
     "tropes": [
       "Hidden identity",
@@ -149,7 +149,7 @@
     "date": "2026-12-05",
     "length": "About 110 pages",
     "series": "hollybourne",
-    "preorder": true
+    "list": "5.99"
   },
   {
     "slug": "twelve-days-to-teach-a-marquess",
@@ -157,7 +157,7 @@
     "subtitle": "A Hollybourne Christmas Novella",
     "kicker": "The governess and the charming marquess",
     "kind": "novella",
-    "price": "3.99",
+    "price": "4.99",
     "buy": "https://emaanspark835.gumroad.com/l/twelve-days-to-teach-a-marquess",
     "tropes": [
       "Governess heroine",
@@ -180,6 +180,6 @@
     "date": "2026-12-05",
     "length": "About 110 pages",
     "series": "hollybourne",
-    "preorder": true
+    "list": "5.99"
   }
 ]

@@ -248,3 +248,4 @@ footer small{display:block;color:#c3b9a6;font-size:14px}
 @media (max-width:760px){.hb-picks{grid-template-columns:1fr;gap:36px}}
 .evb-xmas .evb-card{background:radial-gradient(120% 140% at 15% 20%,#7d343a 0%,#662a30 55%,#4d1f25 100%)}
 .evb-xmas .evb-seal{background:#2f4a3f}
+.price s.was{font-size:.62em;opacity:.6;margin-right:8px;font-weight:400}
