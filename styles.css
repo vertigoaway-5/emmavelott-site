@@ -134,8 +134,8 @@ em.flourish{font-style:italic;font-weight:500;color:var(--green)}
 .evb-seal small{font:600 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase}
 .evb-seal strong{font-size:34px;line-height:1;font-weight:600}
 .evb-kicker{font:600 12px/1 var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--gold-soft);margin:0 0 14px}
-.evb h2{font-family:var(--display);font-size:clamp(30px,3.4vw,42px);line-height:1.12;margin:0 0 14px;color:#fff;font-weight:600}
-.evb h2 em{color:var(--gold-soft);font-style:italic}
+.evb h1,.evb h2{font-family:var(--display);font-size:clamp(30px,3.4vw,42px);line-height:1.12;margin:0 0 14px;color:#fff;font-weight:600}
+.evb h1 em,.evb h2 em{color:var(--gold-soft);font-style:italic}
 .evb-lead{font:400 17px/1.6 var(--body);color:#e9e2d3;margin:0 0 18px;max-width:32em}
 .evb-list{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:7px}
 .evb-list li{font:400 15.5px/1.4 var(--body);color:#f3ecdd;padding-left:22px;position:relative}
@@ -229,3 +229,22 @@ footer small{display:block;color:#c3b9a6;font-size:14px}
 .bp-grid .buy-row{clear:both;padding-top:6px}
 .bp-grid .hook{clear:both}
 }
+
+/* ---------- Hollybourne Christmas Novellas ---------- */
+.evb-xmas{padding-top:0}
+.evb-list li a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.35)}
+.evb-list li a:hover{border-bottom-color:currentColor}
+.hb-offer{margin:12px 0 0;font-size:15.5px}
+.hb-offer a{font-weight:600}
+.hb-sub{margin:64px auto 34px}
+.hb-picks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+.hb-pick{display:flex;flex-direction:column;align-items:center;text-align:center;text-decoration:none;color:inherit;gap:8px}
+.hb-pick img{width:min(210px,70%);height:auto;border-radius:4px;transition:transform .2s}
+.hb-pick:hover img{transform:translateY(-4px)}
+.hb-pick strong{font-family:var(--display);font-size:21px;margin-top:10px}
+.hb-pick span{font-size:15.5px;opacity:.85}
+.hb-pick em{font-size:14.5px;text-decoration:underline;text-underline-offset:3px}
+.sample .sample-break{text-align:center;letter-spacing:.5em;opacity:.6}
+@media (max-width:760px){.hb-picks{grid-template-columns:1fr;gap:36px}}
+.evb-xmas .evb-card{background:radial-gradient(120% 140% at 15% 20%,#7d343a 0%,#662a30 55%,#4d1f25 100%)}
+.evb-xmas .evb-seal{background:#2f4a3f}

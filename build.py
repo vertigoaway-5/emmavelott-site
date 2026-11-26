@@ -18,6 +18,7 @@ import datetime
 import html
 import json
 import os
+import re
 import shutil
 import subprocess
 
@@ -35,6 +36,20 @@ REVIEWS = json.load(open("reviews.json", encoding="utf-8"))
 GUIDES = json.load(open("guides.json", encoding="utf-8")) if os.path.exists("guides.json") else []
 GUIDES_SLUG = "reading-guides"
 SLUGS = {b["slug"] for b in BOOKS}
+# The original catalogue (sold together as the Emma Velott Collection) and the
+# Hollybourne Christmas Novellas (sold together as their own bundle).
+CORE = [b for b in BOOKS if not b.get("series")]
+HOLLY = [b for b in BOOKS if b.get("series") == "hollybourne"]
+HOLLY_SLUG = "hollybourne-christmas-novellas"
+HOLLY_NAME = "The Hollybourne Christmas Novellas"
+HOLLY_BUNDLE = "https://emaanspark835.gumroad.com/l/hollybourne-christmas-novellas"
+HOLLY_PRICE = 9.99
+HOLLY_FULL = round(sum(float(x["price"]) for x in HOLLY), 2)
+HOLLY_SAVE = round(100 * (1 - HOLLY_PRICE / HOLLY_FULL)) if HOLLY else 0
+# While a book has "preorder": true in books.json its buttons say "Pre-order" and
+# the page says when it arrives. Remove the flag (or set it false) on release day.
+HOLLY_PREORDER = any(b.get("preorder") for b in HOLLY)
+RELEASE_NOTE = "Arrives 5 December 2026"
 for r in REVIEWS:
     assert r.get("book") in SLUGS, f"review for unknown book: {r.get('book')}"
 
@@ -49,7 +64,7 @@ def cover_alt(b):
 
 def page_title(b):
     """Kept to about 65 characters so Google shows it in full."""
-    t = f"{b['title']} | Clean Regency Romance"
+    t = f"{b['title']} | {'Christmas Regency Romance' if b.get('series') else 'Clean Regency Romance'}"
     return t if len(t) <= 65 else f"{b['title']} | Emma Velott"
 
 
@@ -88,6 +103,8 @@ document.addEventListener('submit',function(e){{if(e.target.classList&&e.target.
 # Used to put the book's ID on the InitiateCheckout event.
 GUMROAD_PRODUCTS = {b["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"id": b["slug"], "name": b["title"], "value": float(b["price"])} for b in BOOKS}
 GUMROAD_PRODUCTS[BUNDLE.rsplit("/l/", 1)[1]] = {"id": "emma-velott-collection", "name": "The Emma Velott Collection", "value": BUNDLE_PRICE}
+if HOLLY:
+    GUMROAD_PRODUCTS[HOLLY_BUNDLE.rsplit("/l/", 1)[1]] = {"id": HOLLY_SLUG, "name": HOLLY_NAME, "value": HOLLY_PRICE}
 
 # Sale attribution.
 # 1. When a visitor arrives with UTM tags (or a Meta/Bing/Pinterest click ID),
@@ -176,7 +193,7 @@ def signup_box(uid, home, heading="Get free bonus epilogues and reader gifts", e
       </div>"""
 
 
-BUNDLE_FULL = round(sum(float(x["price"]) for x in BOOKS), 2)
+BUNDLE_FULL = round(sum(float(x["price"]) for x in CORE), 2)
 BUNDLE_SAVE = round(100 * (1 - BUNDLE_PRICE / BUNDLE_FULL))
 
 
@@ -218,6 +235,7 @@ def site_header(home):
   <nav class="mainnav" aria-label="Main">
     <ul>
       <li><a href="{home}#books">The Books</a></li>
+      <li><a href="{home}{HOLLY_SLUG}/">Christmas Novellas</a></li>
       <li><a href="{home}#how">How It Works</a></li>
       <li><a href="{home}#indie">A Note from Emma</a></li>
       <li><a href="{home}#follow">Follow</a></li>
@@ -233,6 +251,7 @@ def site_footer(home):
     <ul>
       <li><a href="{home}#books">The Books</a></li>
       <li><a href="{home}clean-duke-romance-books/">Clean Duke Romances</a></li>
+      <li><a href="{home}{HOLLY_SLUG}/">Hollybourne Christmas Novellas</a></li>
       <li><a href="{home}clean-christmas-regency-romance/">Christmas Romances</a></li>
       <li><a href="{home}reading-guides/">Reading Guides</a></li>
       <li><a href="{home}#how">How It Works</a></li>
@@ -254,11 +273,66 @@ def buy_row(b, extra=""):
     kobo = ""
     if b.get("kobo"):
         kobo = f'\n            <a class="store-link" href="{b["kobo"]}" target="_blank" rel="noopener">Also on Kobo</a>'
+    label = "Pre-order the ebook" if b.get("preorder") else "Buy the ebook"
+    fmt = f"EPUB &amp; PDF &#183; {RELEASE_NOTE}" if b.get("preorder") else "EPUB &amp; PDF"
     return f"""<div class="buy-row">
             <span class="price">${b['price']}</span>
-            <a class="btn btn-primary" href="{b['buy']}">Buy the ebook</a>
-            <span class="format">EPUB &amp; PDF</span>{kobo}{extra}
+            <a class="btn btn-primary" href="{b['buy']}">{label}</a>
+            <span class="format">{fmt}</span>{kobo}{extra}
           </div>"""
+
+
+def holly_offer_line(prefix):
+    """One line under a Hollybourne buy button pointing at the three-book set."""
+    verb = "pre-order" if HOLLY_PREORDER else "get"
+    return (f'<p class="hb-offer">Or {verb} <a href="{HOLLY_BUNDLE}">all three Hollybourne novellas for ${HOLLY_PRICE:.2f}</a>'
+            f' and save {HOLLY_SAVE}%. <a class="more-link" href="{prefix}{HOLLY_SLUG}/">See the set</a></p>')
+
+
+def book_card(b, prefix="", tropes=3):
+    return f"""      <article class="book" id="{b['slug']}">
+        <div class="frame"><a href="{prefix}{b['slug']}/"><img src="{prefix}covers/{b['slug']}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(b)}"></a></div>
+        <div>
+          <span class="kicker">{esc(b['kicker'])}</span>
+          <h3><a href="{prefix}{b['slug']}/">{esc(b['title'])}</a></h3>
+          <p class="subtitle">{esc(b['subtitle'])}</p>
+          <p class="tropes">{tropes_html(b['tropes'][:tropes])}</p>
+          <p class="blurb">{esc(b['short'])}</p>
+          {buy_row(b, chr(10) + '            <a class="more-link" href="' + prefix + b['slug'] + '/">Read more about this book</a>')}
+        </div>
+      </article>"""
+
+
+def holly_feature(prefix="", h="h2", ident="hollybourne"):
+    """The three-novella set: fanned covers, price, one button. Used on the home page,
+    the series page and the Christmas page."""
+    if not HOLLY:
+        return ""
+    covers = "\n".join(f'      <img src="{prefix}covers/{b["slug"]}.jpg" width="500" height="800" alt="">' for b in HOLLY)
+    items = "\n".join(
+        f'        <li><a href="{prefix}{b["slug"]}/">{esc(b["title"])}</a> <i>&#183; {esc(", ".join(t.lower() for t in b["tropes"][:2]))}</i></li>'
+        for b in HOLLY)
+    cta = "Pre-order all three" if HOLLY_PREORDER else "Get all three novellas"
+    fine = (f"EPUB &amp; PDF &#183; DRM free &#183; {RELEASE_NOTE}" if HOLLY_PREORDER
+            else "EPUB &amp; PDF &#183; DRM free &#183; emailed to you instantly")
+    return f"""  <section class="evb evb-xmas" id="{ident}" aria-labelledby="{ident}-title">
+  <div class="wrap"><div class="evb-card">
+    <div class="evb-stack" aria-hidden="true">
+{covers}
+      <div class="evb-seal"><small>Save</small><strong>{HOLLY_SAVE}%</strong></div>
+    </div>
+    <div>
+      <p class="evb-kicker">New for Christmas &#183; {HOLLY_NAME}</p>
+      <{h} id="{ident}-title">An earl, a duke and a marquess, <em>one snowbound village</em> and twelve days of Christmas.</{h}>
+      <p class="evb-lead">Three light-hearted, clean Regency Christmas novellas set in the same Yorkshire dale. Each stands alone, so start with whichever hero you like best.</p>
+      <ul class="evb-list">
+{items}
+      </ul>
+      <div class="evb-buy"><span class="evb-price"><s>${HOLLY_FULL:.2f}</s>${HOLLY_PRICE:.2f}</span><a class="btn-gold" href="{HOLLY_BUNDLE}">{cta}</a></div>
+      <p class="evb-fine">{fine}</p>
+    </div>
+  </div></div>
+  </section>"""
 
 
 def sample_link(b, prefix=""):
@@ -272,7 +346,17 @@ def build_sample(b):
     url = f"{SITE}/{b['slug']}/sample/"
     title = f"First Chapter Free: {b['title']}"
     desc = f"Read the opening of {b['title']}, {b['subtitle'].lower()} by Emma Velott, free online."
-    paras = "\n".join(f"      <p>{esc(p)}</p>" for p in s["paras"])
+    def para(p):
+        if p == "* * *":
+            return '      <p class="sample-break">* * *</p>'
+        return "      <p>" + re.sub(r"\*([^*]+)\*", r"<em>\1</em>", esc(p)) + "</p>"
+    paras = "\n".join(para(p) for p in s["paras"])
+    for extra in s.get("more", []):
+        paras += f'\n      <h2 class="sample-heading">{esc(extra["heading"])}</h2>\n' + "\n".join(para(p) for p in extra["paras"])
+    if b.get("series") == "hollybourne":
+        also = f'Or get all three Hollybourne novellas together for ${HOLLY_PRICE:.2f} in <a href="{HOLLY_BUNDLE}">the Hollybourne Christmas set</a>.'
+    else:
+        also = f'Or get all three books together for ${BUNDLE_PRICE:.2f} in <a href="{BUNDLE}">the Emma Velott Collection</a>.'
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -306,7 +390,7 @@ def build_sample(b):
       <div class="sample-end">
         <p class="hook">Want to know what happens next?</p>
         {buy_row(b)}
-        <p class="small">Or get all three books together for ${BUNDLE_PRICE:.2f} in <a href="{BUNDLE}">the Emma Velott Collection</a>.</p>
+        <p class="small">{also}</p>
       </div>
     </div>
   </article>
@@ -344,22 +428,16 @@ def build_home():
     covers = "\n".join(
         f'        <a href="{b["slug"]}/"><img src="covers/{b["slug"]}.jpg" width="500" height="800" '
         f'{PRIORITY if i == 0 else ""}alt="{cover_alt(b)}"></a>'
-        for i, b in enumerate(BOOKS)
+        for i, b in enumerate(CORE)
     )
-    cards = "\n".join(
-        f"""      <article class="book" id="{b['slug']}">
-        <div class="frame"><a href="{b['slug']}/"><img src="covers/{b['slug']}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(b)}"></a></div>
-        <div>
-          <span class="kicker">{esc(b['kicker'])}</span>
-          <h3><a href="{b['slug']}/">{esc(b['title'])}</a></h3>
-          <p class="subtitle">{esc(b['subtitle'])}</p>
-          <p class="tropes">{tropes_html(b['tropes'][:3])}</p>
-          <p class="blurb">{esc(b['short'])}</p>
-          {buy_row(b, chr(10) + '            <a class="more-link" href="' + b['slug'] + '/">Read more about this book</a>')}
-        </div>
-      </article>"""
-        for b in BOOKS
-    )
+    cards = "\n".join(book_card(b) for b in CORE)
+    if HOLLY:
+        cards += f"""
+      <div class="section-head hb-sub" id="christmas">
+        <h2>{HOLLY_NAME}</h2>
+        <p>Three clean Christmas novellas, one Yorkshire village, read in any order. <a class="more-link" href="{HOLLY_SLUG}/">See the set and save {HOLLY_SAVE}%</a></p>
+      </div>
+""" + "\n".join(book_card(b) for b in HOLLY)
     reviews = ""
     if REVIEWS:
         reviews = f"""  <section class="section" id="reviews" aria-labelledby="reviews-title">
@@ -400,7 +478,7 @@ def build_home():
         "<!-- HERO_COVERS -->": covers,
         "<!-- BOOK_CARDS -->": cards,
         "<!-- REVIEWS -->": reviews,
-        "<!-- BUNDLE -->": bundle_feature(),
+        "<!-- BUNDLE -->": bundle_feature() + "\n\n" + holly_feature(),
         "<!-- NEWSLETTER -->": signup_box("home", "", extra_class="band"),
     }.items():
         assert marker in s, marker
@@ -413,7 +491,14 @@ def build_home():
 def build_book(b):
     url = f"{SITE}/{b['slug']}/"
     img = f"{SITE}/covers/{b['slug']}.jpg"
-    others = [o for o in BOOKS if o["slug"] != b["slug"]]
+    in_holly = b.get("series") == "hollybourne"
+    pool = HOLLY if in_holly else CORE
+    others = [o for o in pool if o["slug"] != b["slug"]]
+    more_title = "The other Hollybourne Christmas Novellas" if in_holly else "More clean Regency romance from Emma Velott"
+    crumb_mid = (f'<a href="../{HOLLY_SLUG}/">Hollybourne Christmas Novellas</a>' if in_holly else '<a href="../#books">Books</a>')
+    series_fact = ('\n          <li><strong>Series</strong><a href="../' + HOLLY_SLUG + '/">' + HOLLY_NAME + '</a>. Each novella stands alone, so read them in any order.</li>') if in_holly else ""
+    offer = holly_offer_line("../") if in_holly else ""
+    more_cta = (f'\n      <p style="text-align:center;margin-top:26px"><a class="btn btn-primary" href="{HOLLY_BUNDLE}">{"Pre-order" if HOLLY_PREORDER else "Get"} all three for ${HOLLY_PRICE:.2f}</a></p>' if in_holly else "")
     length = "Novella" if b["kind"] == "novella" else "Full-length novel"
     reviews = [r for r in REVIEWS if r["book"] == b["slug"]]
     ld = {
@@ -431,12 +516,12 @@ def build_book(b):
                 "genre": ["Regency romance", "Historical romance", "Clean romance"],
                 "keywords": ", ".join(["clean Regency romance", "closed-door romance"] + [t.lower() for t in b["tropes"]]),
                 "inLanguage": "en",
-                "datePublished": "2026-08",
+                "datePublished": b.get("date", "2026-08"),
                 "publisher": {"@type": "Person", "name": "Emma Velott"},
                 "bookFormat": "https://schema.org/EBook",
                 "sameAs": [b["kobo"]] if b.get("kobo") else [],
                 "offers": {"@type": "Offer", "price": b["price"], "priceCurrency": "USD",
-                           "availability": "https://schema.org/InStock", "url": b["buy"]},
+                           "availability": "https://schema.org/" + ("PreOrder" if b.get("preorder") else "InStock"), "url": b["buy"]},
             },
             {
                 "@type": "BreadcrumbList",
@@ -499,7 +584,7 @@ def build_book(b):
 {site_header('../')}
 <main id="main">
   <div class="wrap">
-    <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span><a href="../#books">Books</a><span>&#8250;</span>{esc(b['title'])}</nav>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span>{crumb_mid}<span>&#8250;</span>{esc(b['title'])}</nav>
   </div>
   <article class="bp">
     <div class="wrap bp-grid">
@@ -510,15 +595,16 @@ def build_book(b):
         <p class="subtitle">{esc(b['subtitle'])} by Emma Velott</p>
         <p class="tropes">{tropes_html(b['tropes'])}</p>
         {buy_row(b)}
+        {offer}
         {sample_link(b)}
-        <p class="small">Secure checkout through Gumroad. Your download link is emailed to you straight away.</p>
+        <p class="small">Secure checkout through Gumroad. {'Your book is emailed to you on 5 December 2026.' if b.get('preorder') else 'Your download link is emailed to you straight away.'}</p>
         <p class="hook">{esc(b['hook'])}</p>
         <div class="bp-blurb">
 {blurb}
         </div>
         <ul class="facts">
           <li><strong>Length</strong>{esc(b.get('length') or length)}</li>
-          <li><strong>Published</strong>{esc(b.get('published', ''))}, ebook, published by Emma Velott</li>
+          <li><strong>Published</strong>{esc(b.get('published', ''))}, ebook, published by Emma Velott</li>{series_fact}
           <li><strong>Heat level</strong>Clean and closed-door</li>
           <li><strong>Ending</strong>Happily ever after</li>
           <li><strong>Formats</strong>EPUB and PDF, DRM free</li>
@@ -526,8 +612,8 @@ def build_book(b):
         <div class="howmini">
           <h2>How buying works</h2>
           <ol>
-            <li>Press "Buy the ebook" and pay at Gumroad's secure checkout. No account needed.</li>
-            <li>Your download link arrives by email right away.</li>
+            <li>Press "{'Pre-order the ebook' if b.get('preorder') else 'Buy the ebook'}" and pay at Gumroad's secure checkout. No account needed.</li>
+            <li>{'Your book is emailed to you on 5 December 2026.' if b.get('preorder') else 'Your download link arrives by email right away.'}</li>
             <li>Read the EPUB on Kindle (with Send to Kindle), Kobo, Apple Books or your phone.</li>
           </ol>
           <p class="small" style="margin-top:10px"><a href="../#how">More questions answered</a></p>
@@ -544,10 +630,10 @@ def build_book(b):
   </section>
   <section class="section tinted" aria-labelledby="more-title">
     <div class="wrap">
-      <div class="section-head"><h2 id="more-title">More clean Regency romance from Emma Velott</h2></div>
+      <div class="section-head"><h2 id="more-title">{more_title}</h2></div>
       <div class="more-grid">
 {more}
-      </div>
+      </div>{more_cta}
     </div>
   </section>
 </main>
@@ -670,6 +756,7 @@ UPCOMING_XMAS = [
         "text": "Miles Aylward, Duke of Weyburn, and Emmeline Prowse, in a clean, closed-door Regency romance set over the Christmas season.",
     },
     {
+        "skip_if_holly": True,
         "title": "The Hollybourne Christmas Novellas",
         "kind": "Three linked clean Christmas novellas",
         "text": "One Yorkshire dale village, from Christmas 1815 to Twelfth Night 1816. Light-hearted, full of banter and closed door, with a happily-ever-after in every one.",
@@ -690,7 +777,17 @@ def build_xmas_page():
     rakish = next(b for b in BOOKS if b["slug"] == "the-rakish-viscounts-pretend-wife")
 
     upcoming = []
+    holly_block = ""
+    if HOLLY:
+        holly_block = holly_feature("../", ident="hollybourne") + f"""
+  <section class="section" style="padding-top:20px" aria-label="{HOLLY_NAME}">
+    <div class="wrap">
+{chr(10).join(book_card(b, "../", tropes=4) for b in HOLLY)}
+    </div>
+  </section>"""
     for u in UPCOMING_XMAS:
+        if HOLLY and u.get("skip_if_holly"):
+            continue
         items = ""
         if u.get("list"):
             items = "<ul class=\"xlist\">" + "".join(f"<li><em>{esc(t)}</em></li>" for t in u["list"]) + "</ul>"
@@ -725,7 +822,7 @@ def build_xmas_page():
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="{url}">
-<meta property="og:image" content="{SITE}/covers/{rakish['slug']}.jpg">
+<meta property="og:image" content="{SITE}/covers/{(HOLLY[0] if HOLLY else rakish)['slug']}.jpg">
 <meta name="twitter:card" content="summary_large_image">
 {head_assets('../')}
 <style>
@@ -753,6 +850,11 @@ def build_xmas_page():
         <h1 id="x-title" style="font-size:clamp(36px,4.6vw,52px)">Clean Christmas Regency Romance</h1>
         <p>Candlelit drawing rooms, snow on the lanes and a duke who would very much prefer to skip the whole season. Emma's Christmas Regency romances are clean and closed-door, with all the longing of the season and a happily-ever-after by Twelfth Night.</p>
       </div>
+    </div>
+  </section>
+{holly_block}
+  <section class="section" style="padding-top:20px" aria-label="Coming soon">
+    <div class="wrap">
       <div class="xgrid">
 {chr(10).join(upcoming)}
       </div>
@@ -779,6 +881,123 @@ def build_xmas_page():
         </div>
       </article>
       <p style="text-align:center;margin-top:20px"><a class="more-link" href="../{DUKE_SLUG}/">Or browse Emma's clean duke romances</a></p>
+    </div>
+  </section>
+</main>
+{site_footer('../')}
+</body>
+</html>
+"""
+
+
+# ---------- The Hollybourne Christmas Novellas (series + bundle page) ----------
+
+HOLLY_PICKS = [
+    ("twelve-days-to-keep-an-earl", "If you love a pretend courtship", "Old friends, a bargain under a yew tree and a whole village with opinions."),
+    ("twelve-nights-to-trust-a-duke", "If you love a mystery with your romance", "A snowed-in library, a forged book and a stranger who is hiding something."),
+    ("twelve-days-to-teach-a-marquess", "If you love a governess who takes no nonsense", "Twelve days of lessons for a marquess who has never once been serious."),
+]
+
+HOLLY_FAQ = [
+    ("Do I need to read them in order?", "No. Each novella is a complete love story with its own happily ever after. They share a village and the same twelve days of Christmas, so characters wave at one another in passing, and you can start with whichever you like."),
+    ("Are they clean?", "Yes. All three are clean and closed-door, with plenty of banter and longing and nothing you would blush to read on a train."),
+    ("How long is each one?", "Each is a novella of about 35,000 words, which is an evening or two by the fire."),
+    ("What do I get with the set?", "All three novellas as separate ebooks, each in EPUB and PDF, DRM free, for less than buying them one at a time."),
+    ("Can I read them on my Kindle?", "Yes. Use Amazon's free Send to Kindle service to add the EPUB to your Kindle library."),
+]
+
+
+def build_holly_page():
+    url = f"{SITE}/{HOLLY_SLUG}/"
+    title = "The Hollybourne Christmas Novellas | Clean Regency Christmas Romance"
+    desc = "Three clean Regency Christmas novellas by Emma Velott, set in one snowbound Yorkshire village. Read them in any order, or get all three together and save."
+    by_slug = {b["slug"]: b for b in HOLLY}
+    avail = "https://schema.org/" + ("PreOrder" if HOLLY_PREORDER else "InStock")
+    ld = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "BookSeries", "@id": url + "#series", "name": HOLLY_NAME, "url": url, "description": desc,
+             "author": {"@type": "Person", "@id": SITE + "/#emma", "name": "Emma Velott", "url": SITE + "/"},
+             "genre": ["Regency romance", "Christmas romance", "Clean romance"],
+             "hasPart": [{"@type": "Book", "name": b["title"], "url": f"{SITE}/{b['slug']}/"} for b in HOLLY]},
+            {"@type": "Product", "name": HOLLY_NAME + ": all three novellas", "description": desc,
+             "image": [f"{SITE}/covers/{b['slug']}.jpg" for b in HOLLY], "brand": {"@type": "Brand", "name": "Emma Velott"},
+             "offers": {"@type": "Offer", "price": f"{HOLLY_PRICE:.2f}", "priceCurrency": "USD", "availability": avail, "url": HOLLY_BUNDLE}},
+            {"@type": "BreadcrumbList", "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE + "/"},
+                {"@type": "ListItem", "position": 2, "name": HOLLY_NAME, "item": url}]},
+            {"@type": "FAQPage", "mainEntity": [
+                {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in HOLLY_FAQ]},
+        ],
+    }
+    picks = "\n".join(
+        f"""        <a class="hb-pick" href="#{s}">
+          <img src="../covers/{s}.jpg" width="500" height="800" loading="lazy" alt="{cover_alt(by_slug[s])}">
+          <strong>{esc(head)}</strong>
+          <span>{esc(text)}</span>
+          <em>{esc(by_slug[s]['title'])}</em>
+        </a>"""
+        for s, head, text in HOLLY_PICKS if s in by_slug)
+    faq = "\n".join(f"        <details>\n          <summary>{esc(q)}</summary>\n          <p>{esc(a)}</p>\n        </details>" for q, a in HOLLY_FAQ)
+    cta = "Pre-order all three" if HOLLY_PREORDER else "Get all three novellas"
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Emma Velott">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/thumbs/{HOLLY_SLUG}.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{head_assets('../')}
+<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{site_header('../')}
+<main id="main">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span>{HOLLY_NAME}</nav>
+  </div>
+{holly_feature("../", h="h1", ident="set")}
+  <section class="section" aria-labelledby="pick-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="pick-title">Which one first?</h2>
+        <p>They happen over the same twelve days, in the same village, so there is no wrong place to begin.</p>
+      </div>
+      <div class="hb-picks">
+{picks}
+      </div>
+    </div>
+  </section>
+  <section class="section tinted" aria-labelledby="hb-books-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="hb-books-title">The three novellas</h2>
+        <p>Buy one at ${HOLLY[0]['price']}, or all three together for ${HOLLY_PRICE:.2f}.</p>
+      </div>
+{chr(10).join(book_card(b, "../", tropes=4) for b in HOLLY)}
+      <p style="text-align:center;margin-top:34px"><a class="btn btn-primary" href="{HOLLY_BUNDLE}">{cta} for ${HOLLY_PRICE:.2f}</a></p>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="hb-faq-title">
+    <div class="wrap">
+      <div class="section-head"><h2 id="hb-faq-title">Good to know</h2></div>
+      <div class="faq">
+{faq}
+      </div>
+    </div>
+  </section>
+  <section class="section" style="padding-top:8px">
+    <div class="wrap narrow">
+      {signup_box("holly", "../")}
     </div>
   </section>
 </main>
@@ -1217,6 +1436,13 @@ def make_thumbs():
                         *side(R, 9), "-gravity", "center", "-geometry", "+250+40", "-composite",
                         "(", M, "-resize", "x700", *shadow, ")", "-gravity", "center", "-geometry", "+0+0", "-composite",
                         "-quality", "86", os.path.join(d, "the-emma-velott-collection.jpg")], check=True)
+        if len(HOLLY) == 3:
+            L, M, R = (cov(b["slug"]) for b in HOLLY)
+            subprocess.run(["convert", *bg,
+                            *side(L, -9), "-gravity", "center", "-geometry", "-250+40", "-composite",
+                            *side(R, 9), "-gravity", "center", "-geometry", "+250+40", "-composite",
+                            "(", M, "-resize", "x700", *shadow, ")", "-gravity", "center", "-geometry", "+0+0", "-composite",
+                            "-quality", "86", os.path.join(d, HOLLY_SLUG + ".jpg")], check=True)
     except Exception as e:
         print("thumbnail generation skipped:", e)
 
@@ -1250,6 +1476,8 @@ def main():
             write(os.path.join(OUT, b["slug"], "sample", "index.html"), build_sample(b))
     write(os.path.join(OUT, DUKE_SLUG, "index.html"), build_duke_page())
     write(os.path.join(OUT, XMAS_SLUG, "index.html"), build_xmas_page())
+    if HOLLY:
+        write(os.path.join(OUT, HOLLY_SLUG, "index.html"), build_holly_page())
     for g in GUIDES:
         write(os.path.join(OUT, g["slug"], "index.html"), build_guide(g))
     if GUIDES:
@@ -1273,13 +1501,13 @@ def main():
     js = open("bundle-upsell.js", encoding="utf-8").read()
     for k, v in {"__BUNDLE__": BUNDLE, "__FULL__": f"{BUNDLE_FULL:.2f}", "__PRICE__": f"{BUNDLE_PRICE:.2f}",
                  "__SAVE__": str(BUNDLE_SAVE), "__COVERS__": json.dumps(BUNDLE_COVER_ORDER),
-                 "__BOOKS__": json.dumps({x["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"slug": x["slug"], "title": x["title"], "price": float(x["price"])} for x in BOOKS})}.items():
+                 "__BOOKS__": json.dumps({x["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"slug": x["slug"], "title": x["title"], "price": float(x["price"])} for x in CORE})}.items():
         js = js.replace(k, v)
     write(os.path.join(OUT, "bundle-upsell.js"), js)
     make_icons()
     if not os.environ.get("SKIP_COVERS"):
         make_thumbs()
-    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
+    urls = [SITE + "/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + ([f"{SITE}/{HOLLY_SLUG}/"] if HOLLY else []) + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"
