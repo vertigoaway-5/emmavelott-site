@@ -755,11 +755,6 @@ XMAS_SLUG = "clean-christmas-regency-romance"
 
 UPCOMING_XMAS = [
     {
-        "title": "The Duke Who Wouldn't Keep Christmas",
-        "kind": "A full-length clean Regency Christmas romance",
-        "text": "Miles Aylward, Duke of Weyburn, and Emmeline Prowse, in a clean, closed-door Regency romance set over the Christmas season.",
-    },
-    {
         "skip_if_holly": True,
         "title": "The Hollybourne Christmas Novellas",
         "kind": "Three linked clean Christmas novellas",
@@ -857,13 +852,11 @@ def build_xmas_page():
     </div>
   </section>
 {holly_block}
-  <section class="section" style="padding-top:20px" aria-label="Coming soon">
+  <section class="section" style="padding-top:20px" aria-label="Reader list">
     <div class="wrap">
-      <div class="xgrid">
-{chr(10).join(upcoming)}
-      </div>
+      {('<div class="xgrid">' + chr(10).join(upcoming) + '</div>') if upcoming else ''}
       <div style="margin-top:40px">
-      {signup_box("xmas", "../", "Hear first when the Christmas books are out")}
+      {signup_box("xmas", "../", "Hear first about new books and reader gifts" if not upcoming else "Hear first when the Christmas books are out")}
       </div>
     </div>
   </section>
