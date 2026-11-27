@@ -86,6 +86,9 @@ ALL_SLUG = "complete-emma-velott-collection"
 ALL_PRICE = 17.99
 ALL_FULL = round(sum(float(x["price"]) for x in BOOKS), 2)
 ALL_SAVE = round(100 * (1 - ALL_PRICE / ALL_FULL))
+# Headline of the checkout offer. Only true while the set costs less than four single books.
+assert ALL_PRICE < 4 * min(float(x["price"]) for x in BOOKS), "six-book set no longer costs less than four singles: reword ALL_SLOGAN"
+ALL_SLOGAN = "Six books for <em>less than the price of four.</em>"
 ALL_COVER_ORDER = ["twelve-days-to-keep-an-earl", "a-jilted-bride-for-the-battle-scarred-duke", "twelve-nights-to-trust-a-duke",
                    "a-fiery-widow-for-the-cold-duke", "twelve-days-to-teach-a-marquess", "the-rakish-viscounts-pretend-wife"]
 
@@ -1537,6 +1540,12 @@ def make_thumbs():
                             *side(R, 9), "-gravity", "center", "-geometry", "+250+40", "-composite",
                             "(", M, "-resize", "x700", *shadow, ")", "-gravity", "center", "-geometry", "+0+0", "-composite",
                             "-quality", "86", os.path.join(d, HOLLY_SLUG + ".jpg")], check=True)
+        if ALL_BUNDLE and len(BOOKS) == 6:  # all six covers in a 3 x 2 grid
+            cmd = ["convert", *bg]
+            for i, s in enumerate(ALL_COVER_ORDER):
+                cmd += ["(", cov(s), "-resize", "250x400!", *shadow, ")", "-gravity", "NorthWest",
+                        "-geometry", f"+{95 + (i % 3) * 280 - 36}+{85 + (i // 3) * 430 - 22}", "-composite"]
+            subprocess.run(cmd + ["-quality", "86", os.path.join(d, ALL_SLUG + ".jpg")], check=True)
     except Exception as e:
         print("thumbnail generation skipped:", e)
 
@@ -1602,12 +1611,12 @@ def main():
     sets = [_set("", "The Emma Velott Collection", BUNDLE, BUNDLE_FULL, BUNDLE_PRICE, BUNDLE_SAVE, BUNDLE_COVER_ORDER, CORE,
                  "Why stop at one duke when you could have <em>all three love stories?</em>",
                  "Get all three Regency romances in one bundle, this book included.",
-                 "Why stop at one duke when you could have <em>every love story?</em>", "The three Regency romances")]
+                 ALL_SLOGAN, "The three Regency romances")]
     if HOLLY:
         sets.append(_set("_holly", HOLLY_NAME, HOLLY_BUNDLE, HOLLY_FULL, HOLLY_PRICE, HOLLY_SAVE, [x["slug"] for x in HOLLY], HOLLY,
                          "Why stop at one when you could spend <em>all twelve days in Hollybourne?</em>",
                          "Get all three Hollybourne Christmas novellas in one set, this one included.",
-                         "Why stop at one when you could have <em>every Emma Velott romance?</em>", "The three Christmas novellas"))
+                         ALL_SLOGAN, "The three Christmas novellas"))
     all_set = None
     if ALL_BUNDLE and HOLLY:
         all_set = {"bundle": ALL_BUNDLE, "full": f"{ALL_FULL:.2f}", "price": f"{ALL_PRICE:.2f}", "save": str(ALL_SAVE),
