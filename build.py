@@ -1104,6 +1104,128 @@ def build_holly_page():
 """
 
 
+# ---------- The Complete Emma Velott Collection (all six books, ad landing page) ----------
+
+def build_all_page():
+    url = f"{SITE}/{ALL_SLUG}/"
+    title = "The Complete Emma Velott Collection | Six Clean Regency Romances"
+    desc = "All six clean Regency romances by Emma Velott in one set. Three dukes, an earl, a marquess and a rakish viscount, in EPUB and PDF."
+    by_slug = {b["slug"]: b for b in BOOKS}
+    order = [by_slug[x] for x in ALL_COVER_ORDER if x in by_slug]
+    ld = {"@context": "https://schema.org", "@type": "Product", "name": ALL_NAME + ": all six clean Regency romances", "description": desc,
+          "image": f"{SITE}/thumbs/{ALL_SLUG}.jpg", "brand": {"@type": "Brand", "name": "Emma Velott"},
+          "offers": {"@type": "Offer", "price": f"{ALL_PRICE:.2f}", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": ALL_BUNDLE}}
+    covers = "\n".join(f'        <img src="../covers/{b["slug"]}.jpg" width="500" height="800" alt="{cover_alt(b)}"{" " + PRIORITY.strip() if i < 3 else ""}>' for i, b in enumerate(order))
+    buy = f"""<div class="all-buy">
+          <span class="all-price"><s>${ALL_FULL:.2f}</s>${ALL_PRICE:.2f}<b>Save {ALL_SAVE}%</b></span>
+          <a class="btn btn-primary all-cta" href="{ALL_BUNDLE}">Get all six books</a>
+        </div>
+        <p class="all-fine">EPUB &amp; PDF &#183; DRM free &#183; emailed to you straight away</p>"""
+    items = "\n".join(
+        f"""        <a class="all-item" href="../{b['slug']}/">
+          <img src="../covers/{b['slug']}.jpg" width="500" height="800" loading="lazy" alt="">
+          <span><strong>{esc(b['title'])}</strong><em>{esc(b['hook'].strip(chr(8220) + chr(8221)))}</em><small>{esc(" &#183; ".join(b['tropes'][:3])).replace("&amp;#183;", "&#183;")}</small></span>
+        </a>""" for b in [by_slug[x] for x in ["a-jilted-bride-for-the-battle-scarred-duke", "a-fiery-widow-for-the-cold-duke", "the-rakish-viscounts-pretend-wife"] if x in by_slug] + HOLLY)
+    reviews = review_cards(REVIEWS[:6], show_book=True).replace(' about <a href="', ' about <a href="../')
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title>
+<meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Emma Velott">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/thumbs/{ALL_SLUG}.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{head_assets('../')}
+<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+<style>
+.all-hero{{padding:34px 0 56px;text-align:center}}
+.all-hero .kicker{{margin-bottom:12px}}
+.all-hero h1{{font-size:clamp(36px,6vw,62px);max-width:820px;margin:0 auto}}
+.all-hero h1 em{{font-style:italic;font-weight:500;color:var(--green)}}
+.all-lead{{max-width:640px;margin:16px auto 0;color:var(--ink-soft)}}
+.all-covers{{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;max-width:980px;margin:30px auto 28px}}
+.all-covers img{{width:100%;height:auto;border-radius:2px 5px 5px 2px;box-shadow:0 14px 24px -12px rgba(0,0,0,.5)}}
+.all-covers img:nth-child(odd){{transform:translateY(-8px)}}
+.all-buy{{display:flex;flex-wrap:wrap;gap:16px 22px;align-items:center;justify-content:center}}
+.all-price{{font-family:var(--display);font-size:38px;line-height:1}}
+.all-price s{{font:400 18px var(--body);color:#9a9086;margin-right:8px}}
+.all-price b{{display:inline-block;margin-left:10px;font:700 12.5px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;background:var(--claret);color:#fbf0dc;padding:7px 10px;border-radius:20px;vertical-align:middle}}
+.all-cta{{font-size:18px;padding:17px 34px}}
+.all-fine{{font-size:14.5px;color:var(--ink-soft);margin:14px 0 0}}
+.all-slogan{{font-family:var(--display);font-style:italic;font-size:21px;color:var(--claret);margin:18px 0 0}}
+.all-list{{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;max-width:1000px;margin:0 auto}}
+.all-item{{display:flex;gap:16px;align-items:center;background:var(--card);border-radius:8px;padding:14px 16px;text-decoration:none;color:var(--ink)}}
+.all-item img{{width:78px;height:auto;flex:none;border-radius:2px 4px 4px 2px}}
+.all-item strong{{display:block;font-family:var(--display);font-size:19px;line-height:1.25}}
+.all-item em{{display:block;font-size:15px;line-height:1.45;color:var(--ink-soft);margin:5px 0}}
+.all-item small{{display:block;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--claret)}}
+.all-smaller{{text-align:center;margin:30px auto 0;font-size:16px;color:var(--ink-soft)}}
+@media (max-width:640px){{.all-covers{{grid-template-columns:repeat(3,1fr);gap:10px;margin:22px auto 22px}}.all-hero{{padding-top:14px}}.all-lead{{display:none}}.all-cta{{width:100%}}}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{site_header('../')}
+<main id="main">
+  <section class="all-hero" aria-labelledby="all-title">
+    <div class="wrap">
+      <span class="kicker">For lovers of Regency romance</span>
+      <h1 id="all-title">Six clean Regency romances. <em>One set.</em></h1>
+      <p class="all-lead">Three dukes, an earl, a marquess and one rakish viscount, each undone by a lady who will not be managed. Every Emma Velott romance, delivered together.</p>
+      <div class="all-covers">
+{covers}
+      </div>
+      {buy}
+      <p class="all-slogan">Six books for less than the price of four.</p>
+    </div>
+  </section>
+  <section class="section tinted" aria-labelledby="all-reviews-title">
+    <div class="wrap">
+      <div class="section-head"><h2 id="all-reviews-title">What readers are saying</h2></div>
+      <div class="reviews">
+{reviews}
+      </div>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="all-inside-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="all-inside-title">What is in the set</h2>
+        <p>Three Regency romances and three Christmas novellas. Clean, closed-door, and every one ends happily.</p>
+      </div>
+      <div class="all-list">
+{items}
+      </div>
+      <div style="text-align:center;margin-top:40px">
+        {buy}
+      </div>
+      <p class="all-smaller">Prefer a smaller set? The <a href="{BUNDLE}">three Regency romances</a> or the <a href="../{HOLLY_SLUG}/">three Christmas novellas</a> are ${BUNDLE_PRICE:.2f} each.</p>
+    </div>
+  </section>
+  <section class="section tinted" aria-labelledby="all-how-title">
+    <div class="wrap narrow">
+      <div class="section-head"><h2 id="all-how-title">How buying works</h2></div>
+      <ol>
+        <li>Press "Get all six books" and pay at Gumroad's secure checkout. No account needed.</li>
+        <li>Your download links arrive by email right away.</li>
+        <li>Read the EPUBs on Kindle (with Send to Kindle), Kobo, Apple Books or your phone.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+{site_footer('../')}
+</body>
+</html>
+"""
+
+
 # ---------- reading guides ----------
 
 def guide_links_for(b):
@@ -1582,6 +1704,8 @@ def main():
     write(os.path.join(OUT, XMAS_SLUG, "index.html"), build_xmas_page())
     if HOLLY:
         write(os.path.join(OUT, HOLLY_SLUG, "index.html"), build_holly_page())
+    if ALL_BUNDLE and HOLLY:
+        write(os.path.join(OUT, ALL_SLUG, "index.html"), build_all_page())
     for g in GUIDES:
         write(os.path.join(OUT, g["slug"], "index.html"), build_guide(g))
     if GUIDES:
@@ -1626,7 +1750,7 @@ def main():
     make_icons()
     if not os.environ.get("SKIP_COVERS"):
         make_thumbs()
-    urls = [SITE + "/", f"{SITE}/{BOOKS_SLUG}/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + ([f"{SITE}/{HOLLY_SLUG}/"] if HOLLY else []) + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
+    urls = [SITE + "/", f"{SITE}/{BOOKS_SLUG}/", f"{SITE}/{DUKE_SLUG}/", f"{SITE}/{XMAS_SLUG}/"] + ([f"{SITE}/{HOLLY_SLUG}/"] if HOLLY else []) + ([f"{SITE}/{ALL_SLUG}/"] if ALL_BUNDLE and HOLLY else []) + [f"{SITE}/{b['slug']}/" for b in BOOKS] + [f"{SITE}/{b['slug']}/sample/" for b in BOOKS if b["slug"] in SAMPLES] + ([f"{SITE}/{GUIDES_SLUG}/"] if GUIDES else []) + [f"{SITE}/{g['slug']}/" for g in GUIDES]
     sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     sm += "".join(f"  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod></url>\n" for u in urls)
     sm += "</urlset>\n"
