@@ -1048,7 +1048,17 @@ def build_holly_page():
     <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span>&#8250;</span>{HOLLY_NAME}</nav>
   </div>
 {holly_feature("../", h="h1", ident="set")}
-  <section class="section" aria-labelledby="pick-title">
+  <section class="section" aria-labelledby="hb-books-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="hb-books-title">The three novellas</h2>
+        <p>Buy one at ${HOLLY[0]['price']}, or all three together for ${HOLLY_PRICE:.2f}.</p>
+      </div>
+{chr(10).join(book_card(b, "../", tropes=4) for b in HOLLY)}
+      <p style="text-align:center;margin-top:34px"><a class="btn btn-primary" href="{HOLLY_BUNDLE}">{cta} for ${HOLLY_PRICE:.2f}</a></p>
+    </div>
+  </section>
+  <section class="section tinted" aria-labelledby="pick-title">
     <div class="wrap">
       <div class="section-head">
         <h2 id="pick-title">Which one first?</h2>
@@ -1057,16 +1067,6 @@ def build_holly_page():
       <div class="hb-picks">
 {picks}
       </div>
-    </div>
-  </section>
-  <section class="section tinted" aria-labelledby="hb-books-title">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 id="hb-books-title">The three novellas</h2>
-        <p>Buy one at ${HOLLY[0]['price']}, or all three together for ${HOLLY_PRICE:.2f}.</p>
-      </div>
-{chr(10).join(book_card(b, "../", tropes=4) for b in HOLLY)}
-      <p style="text-align:center;margin-top:34px"><a class="btn btn-primary" href="{HOLLY_BUNDLE}">{cta} for ${HOLLY_PRICE:.2f}</a></p>
     </div>
   </section>
   <section class="section" aria-labelledby="hb-faq-title">
