@@ -78,6 +78,16 @@ BUNDLE_PRICE = 9.99
 # Order of the fanned covers in the bundle feature and checkout offer (middle one is the big one).
 BUNDLE_COVER_ORDER = ["the-rakish-viscounts-pretend-wife", "a-fiery-widow-for-the-cold-duke",
                       "a-jilted-bride-for-the-battle-scarred-duke"]
+# All six books in one set (the Emma Velott Collection plus the Hollybourne Christmas Novellas).
+# Offered beside the three-book bundle in the checkout offer. Set ALL_BUNDLE to "" to switch it off.
+ALL_BUNDLE = "https://emmavelott.gumroad.com/l/complete-emma-velott-collection"
+ALL_NAME = "The Complete Emma Velott Collection"
+ALL_SLUG = "complete-emma-velott-collection"
+ALL_PRICE = 17.99
+ALL_FULL = round(sum(float(x["price"]) for x in BOOKS), 2)
+ALL_SAVE = round(100 * (1 - ALL_PRICE / ALL_FULL))
+ALL_COVER_ORDER = ["twelve-days-to-keep-an-earl", "a-jilted-bride-for-the-battle-scarred-duke", "twelve-nights-to-trust-a-duke",
+                   "a-fiery-widow-for-the-cold-duke", "twelve-days-to-teach-a-marquess", "the-rakish-viscounts-pretend-wife"]
 
 GOOGLE_TAG_ID = "GTM-MC72GXTC"  # Google tag for GA4 property emmavelott.com (measurement ID G-BKEVHFKZTW)
 GOOGLE_TAG = f"""<script async src="https://www.googletagmanager.com/gtag/js?id={GOOGLE_TAG_ID}"></script>
@@ -105,6 +115,8 @@ GUMROAD_PRODUCTS = {b["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"id": b["slug"], 
 GUMROAD_PRODUCTS[BUNDLE.rsplit("/l/", 1)[1]] = {"id": "emma-velott-collection", "name": "The Emma Velott Collection", "value": BUNDLE_PRICE}
 if HOLLY:
     GUMROAD_PRODUCTS[HOLLY_BUNDLE.rsplit("/l/", 1)[1]] = {"id": HOLLY_SLUG, "name": HOLLY_NAME, "value": HOLLY_PRICE}
+if ALL_BUNDLE and HOLLY:
+    GUMROAD_PRODUCTS[ALL_BUNDLE.rsplit("/l/", 1)[1]] = {"id": ALL_SLUG, "name": ALL_NAME, "value": ALL_PRICE}
 
 # Sale attribution.
 # 1. When a visitor arrives with UTM tags (or a Meta/Bing/Pinterest click ID),
@@ -1582,18 +1594,25 @@ def main():
     shutil.copy("styles.css", OUT)
     shutil.copy("favicon.svg", OUT)
     js = open("bundle-upsell.js", encoding="utf-8").read()
-    def _set(key, bundle, full, price, save, covers, books, title, body):
-        return {"key": key, "bundle": bundle, "full": f"{full:.2f}", "price": f"{price:.2f}", "save": str(save), "covers": covers,
+    def _set(key, name, bundle, full, price, save, covers, books, title, body, title_all, three):
+        return {"key": key, "name": name, "bundle": bundle, "full": f"{full:.2f}", "price": f"{price:.2f}", "save": str(save), "covers": covers,
                 "books": {x["buy"].rstrip("/").rsplit("/l/", 1)[1]: {"slug": x["slug"], "title": x["title"], "price": float(x["price"])} for x in books},
-                "copy": {"title": title, "body": body}}
-    sets = [_set("", BUNDLE, BUNDLE_FULL, BUNDLE_PRICE, BUNDLE_SAVE, BUNDLE_COVER_ORDER, CORE,
+                "copy": {"title": title, "body": body, "titleAll": title_all, "three": three,
+                         "bodyAll": "Take all six books, or just the three in this set. This book is included either way."}}
+    sets = [_set("", "The Emma Velott Collection", BUNDLE, BUNDLE_FULL, BUNDLE_PRICE, BUNDLE_SAVE, BUNDLE_COVER_ORDER, CORE,
                  "Why stop at one duke when you could have <em>all three love stories?</em>",
-                 "Get all three Regency romances in one bundle, this book included.")]
+                 "Get all three Regency romances in one bundle, this book included.",
+                 "Why stop at one duke when you could have <em>every love story?</em>", "The three Regency romances")]
     if HOLLY:
-        sets.append(_set("_holly", HOLLY_BUNDLE, HOLLY_FULL, HOLLY_PRICE, HOLLY_SAVE, [x["slug"] for x in HOLLY], HOLLY,
+        sets.append(_set("_holly", HOLLY_NAME, HOLLY_BUNDLE, HOLLY_FULL, HOLLY_PRICE, HOLLY_SAVE, [x["slug"] for x in HOLLY], HOLLY,
                          "Why stop at one when you could spend <em>all twelve days in Hollybourne?</em>",
-                         "Get all three Hollybourne Christmas novellas in one set, this one included."))
-    js = js.replace("__SETS__", json.dumps(sets, ensure_ascii=False))
+                         "Get all three Hollybourne Christmas novellas in one set, this one included.",
+                         "Why stop at one when you could have <em>every Emma Velott romance?</em>", "The three Christmas novellas"))
+    all_set = None
+    if ALL_BUNDLE and HOLLY:
+        all_set = {"bundle": ALL_BUNDLE, "full": f"{ALL_FULL:.2f}", "price": f"{ALL_PRICE:.2f}", "save": str(ALL_SAVE),
+                   "covers": ALL_COVER_ORDER, "line": "Three Regency romances and three Christmas novellas"}
+    js = js.replace("__SETS__", json.dumps(sets, ensure_ascii=False)).replace("__ALL__", json.dumps(all_set, ensure_ascii=False))
     write(os.path.join(OUT, "bundle-upsell.js"), js)
     make_icons()
     if not os.environ.get("SKIP_COVERS"):
